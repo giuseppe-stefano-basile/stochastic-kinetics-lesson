@@ -22,21 +22,9 @@ jupyter lab
 
 Start with `notes/00_foundations.md` and `notebooks/00_foundations.ipynb`, then open `notebooks/01_student.ipynb`. Alternatively upload the entire repository to a notebook environment and install with `pip install -e .`; no network or external dataset is needed after installation. The student notebook contains tasks and runnable starter cells; `02_instructor.ipynb` gives worked code and results. Read `notes/derivations.md` alongside them. Execute cells in order. Plotting requires a notebook kernel. Run `python -m pytest` for automated checks.
 
-## Suggested 150-minute class
 
-| Minutes | Topic |
-|---|---|
-| 0–10 | Prediction: same equilibrium, different kinetics |
-| 10–30 | Brownian motion, noise scaling, ensemble variance |
-| 30–50 | Generator, forward equation and current |
-| 50–70 | Double well and Boltzmann distribution |
-| 70–80 | Break |
-| 80–100 | First passage, survival and boundaries |
-| 100–125 | Derive the backward MFPT equation |
-| 125–145 | Compare trajectories, quadrature, discrete generator |
-| 145–150 | Molecular interpretation and limitations |
 
-Students new to probability should complete the foundations chapter and notebook before class, or allow an additional 60–90 minutes for these materials. For 90 minutes, demonstrate sections 3 and 6, and assign the committor as homework. Sections marked extension are optional. Instructor notes contain suggested answers and numerical cautions.
+Students new to probability should complete the foundations chapter and notebook before class, if possible.
 
 ## Contents
 
