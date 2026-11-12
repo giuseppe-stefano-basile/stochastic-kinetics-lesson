@@ -1,0 +1,198 @@
+\pdfoutput=1
+\documentclass[aspectratio=169,10pt]{beamer}
+\pdfmapfile{+cm.map}
+\pdfmapfile{+cmextra.map}
+\pdfmapfile{+symbols.map}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{142D42}
+\definecolor{teal}{HTML}{007C83}
+\definecolor{light}{HTML}{F0F6F6}
+\setbeamercolor{normal text}{fg=ink,bg=white}
+\setbeamercolor{frametitle}{fg=ink,bg=white}
+\setbeamercolor{structure}{fg=teal}
+\setbeamercolor{block title}{fg=white,bg=teal}
+\setbeamercolor{block body}{fg=ink,bg=light}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{\leavevmode\hbox{\hspace{0.5cm}\scriptsize Stochastic kinetics\hfill\insertframenumber\hspace{0.5cm}}\vspace{0.2cm}}
+\setbeamertemplate{itemize items}[circle]
+\setbeamersize{text margin left=0.7cm,text margin right=0.7cm}
+\title{Stochastic kinetics}
+\subtitle{From Brownian trajectories to Fokker--Planck and first passage}
+\author{Giuseppe Stefano Basile}
+\institute{Hands-on lesson}
+\date{}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\mathrm{d}}
+\begin{document}
+\begin{frame}\titlepage\end{frame}
+\begin{frame}{The question behind this lesson}
+\begin{block}{A molecular transition}Given a free-energy landscape and a diffusion coefficient, how long does it take to reach a product state?\end{block}
+\begin{itemize}\item Start with individual noisy trajectories.\item Derive an equation for their probability density.\item Predict a mean first-passage time and test it numerically.\end{itemize}
+\end{frame}
+\begin{frame}{Road map and learning objectives}
+\begin{enumerate}\item Probability, ensembles and Brownian motion.\item Langevin dynamics and the Fokker--Planck equation.\item First passage, numerical comparisons and molecular limits.\end{enumerate}
+\vspace{0.4cm}\textbf{Afterwards:} derive the main equations, run the examples and identify when their assumptions may fail.
+\end{frame}
+\begin{frame}{A probability density is not a probability}
+A random variable $X$ has density $p(x)$ when
+\[\Pr(c<X<d)=\int_c^d p(x)\,\dd x,\qquad \int p(x)\,\dd x=1.\]
+\begin{itemize}\item $p(x)$ has units of $1/x$. The area under it is a probability.\item The mean $\E[X]$ locates the ensemble average.\item The variance $\mathrm{Var}(X)=\E[(X-\E X)^2]$ measures spread.\end{itemize}
+\end{frame}
+\begin{frame}{Samples, uncertainty and correlation}
+For $N$ independent samples, estimate the mean and its standard error by
+\[\bar X=\frac{1}{N}\sum_{i=1}^{N}X_i,\qquad \mathrm{SE}(\bar X)\approx \frac{s}{\sqrt N}.\]
+\begin{itemize}\item Standard deviation describes variation between outcomes.\item Standard error describes uncertainty in the estimated mean.\item Consecutive trajectory frames are generally correlated.\end{itemize}
+\begin{block}{Try it}Compare histograms for $N=100$ and $N=10\,000$ in the foundations notebook.\end{block}
+\end{frame}
+\begin{frame}{Process, path and Markov property}
+\begin{itemize}\item A process $\{X_t\}_{t\geq0}$ is a family of random variables.\item A trajectory is one realization. A density describes an ensemble.\item Markov property: given the present state, the future is independent of its past.\end{itemize}
+\vspace{0.3cm}For a molecular coordinate, omitted degrees of freedom can carry memory. Markovianity must be assessed for the chosen state.
+\end{frame}
+\begin{frame}{Brownian motion: the noise model}
+Standard Brownian motion $W_t$ has independent increments
+\[\Delta W=W_{t+\Delta t}-W_t\sim\mathcal N(0,\Delta t).\]
+Hence $\Delta W=\sqrt{\Delta t}\,\xi$ with $\xi\sim\mathcal N(0,1)$.
+\begin{itemize}\item Paths are continuous but almost surely nowhere differentiable.\item $\dot W$ is formal white-noise notation.\item The variance of an increment is $\Delta t$.\end{itemize}
+\end{frame}
+\begin{frame}{Free diffusion}
+\[\dd X_t=\sqrt{2D}\,\dd W_t,\qquad X_0=x_0.\]
+\[\E[X_t]=x_0,\qquad \mathrm{Var}(X_t)=2Dt.\]
+A single path fluctuates. The ensemble variance grows linearly in time.
+\begin{block}{Units and prediction}$[D]=\mathrm{length}^2/\mathrm{time}$. What happens if $D$ doubles?\end{block}
+\end{frame}
+\begin{frame}{Hands-on 1: trajectories and ensembles}
+\textbf{Open:} \texttt{notebooks/00\_foundations.ipynb}, section 2.
+\[X_{n+1}=X_n+\sqrt{2D\Delta t}\,\xi_n,\qquad \xi_n\sim\mathcal N(0,1).\]
+\begin{enumerate}\item Plot several trajectories and the ensemble variance.\item Compare the variance with $2Dt$.\item Replace $\sqrt{\Delta t}$ with $\Delta t$. What fails as $\Delta t\to0$?\end{enumerate}
+\end{frame}
+\begin{frame}{A particle in a thermal environment}
+An underdamped Langevin model reads
+\[\dd x=v\,\dd t,\quad m\dd v=[-U'(x)-\zeta v]\dd t+\sqrt{2\zeta k_BT}\,\dd W_t.\]
+\begin{itemize}\item $U$: potential energy, $\zeta$: friction, $T$: temperature.\item Friction and fluctuations satisfy a fluctuation--dissipation relation.\item If velocity relaxes rapidly, an overdamped position model may apply.\end{itemize}
+\end{frame}
+\begin{frame}{Overdamped Langevin equation}
+For constant mobility $\mu=1/\zeta$, define $D=\mu k_BT$ and $\beta=(k_BT)^{-1}$. Then
+\[\boxed{\dd X_t=-D\beta F'(X_t)\,\dd t+\sqrt{2D}\,\dd W_t.}\]
+The first term is drift. The second describes diffusion.
+\begin{block}{Modeling assumption}Using a free energy $F$ and Markovian diffusion for a molecular collective variable is an additional approximation.\end{block}
+\end{frame}
+\begin{frame}{Euler--Maruyama: simulate the model}
+\[X_{n+1}=X_n-D\beta F'(X_n)\Delta t+\sqrt{2D\Delta t}\,\xi_n.\]
+\begin{itemize}\item Evaluate coefficients at the start of each step: It\^o convention.\item Draw independent standard normal $\xi_n$ values.\item Discretization introduces error: repeat at smaller $\Delta t$.\end{itemize}
+A finite ensemble also produces sampling uncertainty. These are distinct errors.
+\end{frame}
+\begin{frame}{Exactly solvable check: harmonic confinement}
+Take $F(x)=\tfrac12\kappa x^2$ and $\lambda=D\beta\kappa$. For fixed $X_0=x_0$,
+\[\E[X_t]=x_0e^{-\lambda t},\quad \mathrm{Var}(X_t)=\frac{D}{\lambda}(1-e^{-2\lambda t}).\]
+\begin{itemize}\item At long times, $\mathrm{Var}(X)=1/(\beta\kappa)$.\item At fixed $F$ and $T$, $D$ changes relaxation time $1/\lambda$.\end{itemize}
+\textbf{Notebook:} compare simulated moments to these exact curves.
+\end{frame}
+\begin{frame}{Why It\^o calculus differs from ordinary calculus}
+For $\dd X=a(X)\dd t+\sqrt{2D(X)}\dd W$ and smooth $f$,
+\[\Delta f\approx f'(X)\Delta X+\tfrac12 f''(X)(\Delta X)^2.\]
+Since $(\Delta W)^2$ contributes at order $\Delta t$, the quadratic term survives:
+\[\boxed{\dd f=[af'+Df'']\dd t+\sqrt{2D}f'\dd W.}\]
+Assume the regularity and integrability required to take expectations.
+\end{frame}
+\begin{frame}{Backward generator and forward density equation}
+Define the backward generator acting on an observable $f$:
+\[\mathcal Lf=af'+Df'',\qquad \frac{\dd}{\dd t}\E[f(X_t)]=\E[\mathcal Lf(X_t)].\]
+Write the expectation as $\int f p\,\dd x$ and integrate by parts:
+\[\boxed{\partial_t p=-\partial_x(ap)+\partial_x^2(Dp).}\]
+\textbf{Forward:} evolve densities. \quad \textbf{Backward:} act on functions of the starting point.
+\end{frame}
+\begin{frame}{Probability current and equilibrium}
+\[\partial_t p=-\partial_xJ,\qquad J=ap-\partial_x(Dp).\]
+For constant $D$, with $a=-D\beta F'$,
+\[J=-D(\beta F'p+\partial_xp).\]
+A normalizable zero-current equilibrium is $p_{\mathrm{eq}}(x)=Z^{-1}e^{-\beta F(x)}$.
+\end{frame}
+\begin{frame}{Hands-on 2: a double-well free energy}
+\begin{columns}
+\column{0.46\textwidth}
+\[F(x)=H(x^2-1)^2.\]
+Minima: $x=\pm1$.\\
+Barrier: $F(0)-F(\pm1)=H$.\\[0.3cm]
+Simulate a trajectory and compare its histogram with $e^{-\beta F}/Z$.
+\column{0.52\textwidth}
+\begin{tikzpicture}\begin{axis}[width=\linewidth,height=5cm,axis lines=left,xlabel={$x$},ylabel={$F(x)$},domain=-1.5:1.5,samples=100,ymin=0,ymax=4.3,xtick={-1,0,1}]
+\addplot[teal,very thick]{2*(x*x-1)^2};
+\end{axis}\end{tikzpicture}
+\end{columns}
+\end{frame}
+\begin{frame}{Same equilibrium, different kinetics}
+At fixed $F$ and $T$, replace $D$ by $cD$:
+\begin{itemize}\item $p_{\mathrm{eq}}$ is unchanged.\item The generator is multiplied by $c$.\item First-passage times scale by $1/c$.\end{itemize}
+\begin{block}{Discuss}What does an equilibrium free-energy surface tell us? What information is still needed for a time scale?\end{block}
+\end{frame}
+\begin{frame}{First-passage time: define the experiment}
+Start at $x_0$, reflect at $a$, and absorb at target $b$:
+\[\tau_b=\inf\{t\geq0:X_t\geq b\},\qquad T(x_0)=\E_{x_0}[\tau_b].\]
+\begin{itemize}\item Reflecting boundary: probability current $J(a,t)=0$.\item Absorbing boundary: $p(b,t)=0$ for a regular diffusion.\item Barrier crossing and arrival in the product well are different events.\end{itemize}
+\end{frame}
+\begin{frame}{Survival, mean time and censoring}
+Define $S(t)=\Pr(\tau_b>t)$. If the mean is finite,
+\[\E[\tau_b]=\int_0^\infty S(t)\,\dd t.\]
+A no-hit trajectory at observation time $T_{\mathrm{obs}}$ is right-censored.
+\[\E[\min(\tau_b,T_{\mathrm{obs}})]=\int_0^{T_{\mathrm{obs}}}S(t)\,\dd t.\]
+This restricted mean is not necessarily the full MFPT.
+\end{frame}
+\begin{frame}{Derive the backward MFPT equation}
+For a short interval $\Delta t$, a first-step argument gives
+\[T(x)=\Delta t+\E_x[T(X_{\Delta t})]+o(\Delta t).\]
+Using $\E_x[T(X_{\Delta t})]=T(x)+\Delta t\,\mathcal LT(x)+o(\Delta t)$,
+\[\boxed{\mathcal LT(x)=-1,\quad T'(a)=0,\quad T(b)=0.}\]
+For constant $D$, $\mathcal LT=DT''-D\beta F'T'$.
+\end{frame}
+\begin{frame}{Integrating-factor derivation}
+For an equilibrium It\^o diffusion with positive $D(x)$,
+\[\mathcal LT=e^{\beta F}\frac{\dd}{\dd x}\!\left[D e^{-\beta F}T'\right]=-1.\]
+Apply $T'(a)=0$, integrate from $a$ to $y$, then apply $T(b)=0$:
+\[\boxed{T(x_0)=\int_{x_0}^{b}\!\dd y\,\frac{e^{\beta F(y)}}{D(y)}\int_a^y\!\dd z\,e^{-\beta F(z)}.}\]
+Assumes a reflecting $a$, absorbing $b$, finite MFPT and adequate regularity.
+\end{frame}
+\begin{frame}{Analytic check: free diffusion}
+For $F=0$ and constant $D$, the integral reduces to
+\[\boxed{T(x_0)=\frac{(b-a)^2-(x_0-a)^2}{2D}.}\]
+\begin{itemize}\item $T(b)=0$ and $T'(a)=0$.\item $T$ has units of time and scales as $1/D$.\item Moving either boundary changes the experiment and its answer.\end{itemize}
+\end{frame}
+\begin{frame}{Hands-on 3: compare three routes}
+\textbf{Open:} \texttt{notebooks/01\_student.ipynb}, sections 4--6.
+\begin{enumerate}\item Simulate independent first-passage trajectories.\item Evaluate the backward-equation integral by quadrature.\item Solve a discrete generator equation $-Q_{SS}T=\mathbf 1$.\end{enumerate}
+Match $F$, $D$, $x_0$, $a$ and $b$. Report censoring and uncertainty. Refine the time step and grid before interpreting disagreement.
+\end{frame}
+\begin{frame}{Why numerical comparisons can disagree}
+\begin{itemize}\item \textbf{Sampling:} finitely many independent trajectories.\item \textbf{Time step:} endpoint detection can miss crossings.\item \textbf{Grid spacing:} the finite-state model approaches the continuum on refinement.\item \textbf{Censoring:} paths not arriving before the horizon have unknown full times.\end{itemize}
+For the default teaching model, quadrature gives approximately $5.13$ in dimensionless time units.
+\end{frame}
+\begin{frame}{Optional: the committor}
+For reactant $A$ and product $B$, the forward committor is
+\[q(x)=\Pr_x(\tau_B<\tau_A),\qquad \mathcal Lq=0.\]
+Boundary conditions: $q(a)=0$, $q(b)=1$. For variable $D$ in equilibrium,
+\[q(x)=\frac{\int_a^x e^{\beta F(y)}/D(y)\,\dd y}{\int_a^b e^{\beta F(y)}/D(y)\,\dd y}.\]
+MFPT asks \emph{how long}; the committor asks \emph{which state first}.
+\end{frame}
+\begin{frame}{From the toy model to molecules}
+For a collective variable $s(\mathbf R)$, define the marginal free energy
+\[F(s)=-k_BT\ln p_{\mathrm{eq}}(s)+C.\]
+Before predicting kinetics, ask:
+\begin{enumerate}\item Do $A$ and $B$ represent the desired molecular event?\item Is the projected dynamics approximately Markovian?\item Is $D(s)$ known, with units and uncertainty?\item Are predictions robust to boundaries and hidden slow coordinates?\end{enumerate}
+\end{frame}
+\begin{frame}{Take-home questions}
+\begin{enumerate}\item Can two models have the same equilibrium density and different MFPTs?\item What do reflecting and absorbing boundaries encode?\item Why can a finite simulation underestimate a full passage time?\item When is a one-dimensional molecular diffusion model plausible?\end{enumerate}
+Read \texttt{notes/00\_foundations.md} and \texttt{notes/derivations.md} for full derivations.
+\end{frame}
+\begin{frame}{References and teaching material}
+\footnotesize
+\begin{itemize}
+\item C. W. Gardiner, \emph{Handbook of Stochastic Methods}, 3rd ed., Springer (2004).
+\item P. H\"anggi, P. Talkner, M. Borkovec, Rev. Mod. Phys. \textbf{62}, 251 (1990), \href{https://doi.org/10.1103/RevModPhys.62.251}{doi:10.1103/RevModPhys.62.251}.
+\item G. Hummer, New J. Phys. \textbf{7}, 34 (2005), \href{https://doi.org/10.1088/1367-2630/7/1/034}{doi:10.1088/1367-2630/7/1/034}.
+\item W. E and E. Vanden-Eijnden, J. Stat. Phys. \textbf{123}, 503 (2006), \href{https://doi.org/10.1007/s10955-005-9003-9}{doi:10.1007/s10955-005-9003-9}.
+\item Inspired by Luca Sagresti's \href{https://github.com/lianctrl/HandsOnSession_CMLS}{HandsOnSession\_CMLS}.
+\end{itemize}
+\end{frame}
+\end{document}
