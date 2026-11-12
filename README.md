@@ -56,3 +56,15 @@ The model uses dimensionless units: beta=1, length scale=1, D=1 by default. A si
 
 Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/HandsOnSession_CMLS), particularly its Langevin, MSM and Fokker–Planck tutorial. This project implements its own model and code and does not redistribute files from that repository. Consult the original repository's license before reusing its material. Original material here is offered under the MIT license in `LICENSE`.
 
+
+## Beamer slides
+
+The editable presentation is `slides/stochastic_kinetics.tex`. Compile it with a standard TeX Live installation containing Beamer, TikZ and PGFPlots:
+
+```bash
+cd slides
+pdflatex stochastic_kinetics.tex
+pdflatex stochastic_kinetics.tex
+```
+
+The slides include the introductory material and the main hands-on lesson. Plan an additional 60–90 minutes for students who are new to stochastic processes, or assign the foundations as preparation.
