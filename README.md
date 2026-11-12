@@ -68,3 +68,7 @@ pdflatex stochastic_kinetics.tex
 ```
 
 The slides include the introductory material and the main hands-on lesson. Plan an additional 60–90 minutes for students who are new to stochastic processes, or assign the foundations as preparation.
+
+### Guided kinetics investigation
+
+Open `notebooks/03_kinetics_investigation.ipynb` for a single double-well experiment connecting the backward equation, simulated first passages, grid refinement, censoring and parameter changes. For the Beamer density comparison, `python slides/generate_density_data.py` regenerates the CSV data in the current directory (NumPy and SciPy required). The slide source embeds the displayed coordinates and builds without Python. The enlarged slide deck is a full teaching resource; use the introduction as preparation and select advanced slides according to the available class time.
