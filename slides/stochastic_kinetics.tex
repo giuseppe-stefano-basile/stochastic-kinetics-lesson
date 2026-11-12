@@ -51,6 +51,19 @@ For $N$ independent samples, estimate the mean and its standard error by
 \begin{itemize}\item A process $\{X_t\}_{t\geq0}$ is a family of random variables.\item A trajectory is one realization. A density describes an ensemble.\item Markov property: given the present state, the future is independent of its past.\end{itemize}
 \vspace{0.3cm}For a molecular coordinate, omitted degrees of freedom can carry memory. Markovianity must be assessed for the chosen state.
 \end{frame}
+
+\begin{frame}{Transition densities and the Markov assumption}
+For a time-homogeneous Markov process with transition density
+$p_t(y\mid x)$, conditioning on the intermediate state gives
+\[
+p_{t+s}(y\mid x)=\int p_t(y\mid z)\,p_s(z\mid x)\,\dd z.
+\]
+\begin{itemize}
+\item The integral sums all intermediate positions $z$.
+\item This Chapman--Kolmogorov relation is a model check at chosen lag times.
+\item An equilibrium density alone does not specify $p_t(y\mid x)$.
+\end{itemize}
+\end{frame}
 \begin{frame}{Brownian motion: the noise model}
 Standard Brownian motion $W_t$ has independent increments
 \[\Delta W=W_{t+\Delta t}-W_t\sim\mathcal N(0,\Delta t).\]
@@ -104,11 +117,35 @@ Write the expectation as $\int f p\,\dd x$ and integrate by parts:
 \[\boxed{\partial_t p=-\partial_x(ap)+\partial_x^2(Dp).}\]
 \textbf{Forward:} evolve densities. \quad \textbf{Backward:} act on functions of the starting point.
 \end{frame}
+
+\begin{frame}{Forward equation: the adjoint calculation}
+Assume smooth functions and boundary conditions cancelling the boundary terms. With $\mathcal L f=af'+Df''$,
+\[
+\int f\,\partial_t p\,\dd x
+=\int (af'+Df'')p\,\dd x
+=\int f\,[-(ap)'+(Dp)'']\,\dd x.
+\]
+As this holds for suitable test functions $f$,
+\[\partial_t p=\mathcal L^*p=-(ap)'+(Dp)''.\]
+\textbf{Boundary terms matter:} reflecting and absorbing boundaries define different operator domains and different physical experiments.
+\end{frame}
 \begin{frame}{Probability current and equilibrium}
 \[\partial_t p=-\partial_xJ,\qquad J=ap-\partial_x(Dp).\]
 For constant $D$, with $a=-D\beta F'$,
 \[J=-D(\beta F'p+\partial_xp).\]
 A normalizable zero-current equilibrium is $p_{\mathrm{eq}}(x)=Z^{-1}e^{-\beta F(x)}$.
+\end{frame}
+
+\begin{frame}{Position-dependent diffusion: the It\^o drift}
+For $\dd X=a(X)\dd t+\sqrt{2D(X)}\,\dd W$, the current is
+\[J=a p-\partial_x(Dp).\]
+To obtain $p_{\rm eq}\propto e^{-\beta F}$ with zero current, choose
+\[\boxed{a(x)=D'(x)-D(x)\beta F'(x).}\]
+Then $\partial_t p=\partial_x[D e^{-\beta F}\partial_x(e^{\beta F}p)]$.
+\begin{itemize}
+\item The $D'$ term is required for this It\^o representation.
+\item Other stochastic conventions require a transformed drift.
+\end{itemize}
 \end{frame}
 \begin{frame}{Hands-on 2: a double-well free energy}
 \begin{columns}
@@ -133,6 +170,15 @@ Start at $x_0$, reflect at $a$, and absorb at target $b$:
 \[\tau_b=\inf\{t\geq0:X_t\geq b\},\qquad T(x_0)=\E_{x_0}[\tau_b].\]
 \begin{itemize}\item Reflecting boundary: probability current $J(a,t)=0$.\item Absorbing boundary: $p(b,t)=0$ for a regular diffusion.\item Barrier crossing and arrival in the product well are different events.\end{itemize}
 \end{frame}
+
+\begin{frame}{Probability loss equals first-passage flux}
+Let $p(x,t\mid x_0)$ be the \emph{killed} density on $a<x<b$, with reflecting $a$ and absorbing $b$.
+\[S(t\mid x_0)=\int_a^b p(x,t\mid x_0)\,\dd x.\]
+Integrating $\partial_t p=-\partial_xJ$ gives
+\[\frac{\dd S}{\dd t}=J(a,t)-J(b,t)=-J(b,t).\]
+For a regular boundary, the first-passage density is
+$\rho_\tau(t)=-S'(t)=J(b,t)$.
+\end{frame}
 \begin{frame}{Survival, mean time and censoring}
 Define $S(t)=\Pr(\tau_b>t)$. If the mean is finite,
 \[\E[\tau_b]=\int_0^\infty S(t)\,\dd t.\]
@@ -154,10 +200,30 @@ Apply $T'(a)=0$, integrate from $a$ to $y$, then apply $T(b)=0$:
 \[\boxed{T(x_0)=\int_{x_0}^{b}\!\dd y\,\frac{e^{\beta F(y)}}{D(y)}\int_a^y\!\dd z\,e^{-\beta F(z)}.}\]
 Assumes a reflecting $a$, absorbing $b$, finite MFPT and adequate regularity.
 \end{frame}
+
+\begin{frame}{MFPT integral: intermediate steps}
+Write $w(x)=e^{-\beta F(x)}$ and $I(y)=\int_a^y w(z)\,\dd z$. From $\mathcal LT=-1$,
+\[\frac{\dd}{\dd x}\big[D(x)w(x)T'(x)\big]=-w(x).\]
+Using $T'(a)=0$ yields $D(y)w(y)T'(y)=-I(y)$. Then
+\[
+T(b)-T(x_0)=\int_{x_0}^{b}T'(y)\,\dd y,
+\]
+and $T(b)=0$ gives the integral formula on the preceding slide.
+\end{frame}
 \begin{frame}{Analytic check: free diffusion}
 For $F=0$ and constant $D$, the integral reduces to
 \[\boxed{T(x_0)=\frac{(b-a)^2-(x_0-a)^2}{2D}.}\]
 \begin{itemize}\item $T(b)=0$ and $T'(a)=0$.\item $T$ has units of time and scales as $1/D$.\item Moving either boundary changes the experiment and its answer.\end{itemize}
+\end{frame}
+
+\begin{frame}{From Fokker--Planck to a grid generator}
+For spacing $h$ and $\Delta F_i=F_{i+1}-F_i$, use nearest-neighbour rates
+\[
+Q_{i,i+1}=\frac{D}{h^2}e^{-\beta\Delta F_i/2},\qquad
+Q_{i+1,i}=\frac{D}{h^2}e^{+\beta\Delta F_i/2}.
+\]
+With $Q_{ii}=-\sum_{j\ne i}Q_{ij}$, row probabilities satisfy $\dot p=pQ$ and $\pi_i\propto e^{-\beta F_i}$ satisfies detailed balance: $\pi_iQ_{ij}=\pi_jQ_{ji}$. For a target removed from the transient set $S$,
+\[-Q_{SS}\,\mathbf T=\mathbf 1.\]
 \end{frame}
 \begin{frame}{Hands-on 3: compare three routes}
 \textbf{Open:} \texttt{notebooks/01\_student.ipynb}, sections 4--6.
@@ -167,6 +233,15 @@ Match $F$, $D$, $x_0$, $a$ and $b$. Report censoring and uncertainty. Refine the
 \begin{frame}{Why numerical comparisons can disagree}
 \begin{itemize}\item \textbf{Sampling:} finitely many independent trajectories.\item \textbf{Time step:} endpoint detection can miss crossings.\item \textbf{Grid spacing:} the finite-state model approaches the continuum on refinement.\item \textbf{Censoring:} paths not arriving before the horizon have unknown full times.\end{itemize}
 For the default teaching model, quadrature gives approximately $5.13$ in dimensionless time units.
+\end{frame}
+
+\begin{frame}{MFPT versus a phenomenological rate}
+\begin{itemize}
+\item $T(x)$ refers to a specific initial point and stopping event. For initial density $\rho_0$, $\langle\tau\rangle_{\rho_0}=\int T(x)\rho_0(x)\,\dd x$.
+\item $1/\langle\tau\rangle$ is the reciprocal mean of that experiment.
+\item A two-state rate interpretation requires suitable basin definitions and a separation between intrabasin relaxation and escape.
+\item A boundary at the barrier and a boundary in the product well have different recrossing behavior.
+\end{itemize}
 \end{frame}
 \begin{frame}{Optional: the committor}
 For reactant $A$ and product $B$, the forward committor is
@@ -180,6 +255,18 @@ For a collective variable $s(\mathbf R)$, define the marginal free energy
 \[F(s)=-k_BT\ln p_{\mathrm{eq}}(s)+C.\]
 Before predicting kinetics, ask:
 \begin{enumerate}\item Do $A$ and $B$ represent the desired molecular event?\item Is the projected dynamics approximately Markovian?\item Is $D(s)$ known, with units and uncertainty?\item Are predictions robust to boundaries and hidden slow coordinates?\end{enumerate}
+\end{frame}
+
+\begin{frame}{Changing coordinates: density and diffusion}
+Let $y=g(x)$ be a smooth monotone map. Probability conservation gives
+\[p_y(y)=p_x(x)\left|\frac{\dd x}{\dd y}\right|,\qquad
+D_y(y)=[g'(x)]^2D_x(x).\]
+Thus $F_y(y)=F_x(x)+k_BT\ln|g'(x)|+C$ for these coordinate densities.
+\begin{itemize}
+\item Free-energy profiles and diffusivities depend on the coordinate.
+\item If transformed consistently, a physical first-passage event is invariant.
+\item Projecting many molecular coordinates into one is a separate approximation and can create memory.
+\end{itemize}
 \end{frame}
 \begin{frame}{Take-home questions}
 \begin{enumerate}\item Can two models have the same equilibrium density and different MFPTs?\item What do reflecting and absorbing boundaries encode?\item Why can a finite simulation underestimate a full passage time?\item When is a one-dimensional molecular diffusion model plausible?\end{enumerate}
