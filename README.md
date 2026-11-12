@@ -20,7 +20,7 @@ python -m pip install -e '.[teaching]'
 jupyter lab
 ```
 
-Open `notebooks/01_student.ipynb` from the repository root. Alternatively upload the entire repository to a notebook environment and install with `pip install -e .`; no network or external dataset is needed after installation. The student notebook contains tasks and runnable starter cells; `02_instructor.ipynb` gives worked code and results. Read `notes/derivations.md` alongside them. Execute cells in order. Plotting requires a notebook kernel. Run `python -m pytest` for automated checks.
+Start with `notes/00_foundations.md` and `notebooks/00_foundations.ipynb`, then open `notebooks/01_student.ipynb`. Alternatively upload the entire repository to a notebook environment and install with `pip install -e .`; no network or external dataset is needed after installation. The student notebook contains tasks and runnable starter cells; `02_instructor.ipynb` gives worked code and results. Read `notes/derivations.md` alongside them. Execute cells in order. Plotting requires a notebook kernel. Run `python -m pytest` for automated checks.
 
 ## Suggested 150-minute class
 
@@ -36,10 +36,12 @@ Open `notebooks/01_student.ipynb` from the repository root. Alternatively upload
 | 125–145 | Compare trajectories, quadrature, discrete generator |
 | 145–150 | Molecular interpretation and limitations |
 
-For 90 minutes, demonstrate sections 3 and 6, and assign the committor as homework. Sections marked extension are optional. Instructor notes contain suggested answers and numerical cautions.
+Students new to probability should complete the foundations chapter and notebook before class, or allow an additional 60–90 minutes for these materials. For 90 minutes, demonstrate sections 3 and 6, and assign the committor as homework. Sections marked extension are optional. Instructor notes contain suggested answers and numerical cautions.
 
 ## Contents
 
+- `notes/00_foundations.md`: a beginner introduction to probability, Brownian motion and the Fokker–Planck equation.
+- `notebooks/00_foundations.ipynb`: worked numerical introduction and guided exercises.
 - `notebooks/01_student.ipynb`: scaffold, predictions and exercises.
 - `notebooks/02_instructor.ipynb`: executable solutions and diagnostics.
 - `notes/derivations.md`: detailed mathematical development and assumptions.
@@ -53,3 +55,4 @@ The model uses dimensionless units: beta=1, length scale=1, D=1 by default. A si
 ## Attribution and license
 
 Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/HandsOnSession_CMLS), particularly its Langevin, MSM and Fokker–Planck tutorial. This project implements its own model and code and does not redistribute files from that repository. Consult the original repository's license before reusing its material. Original material here is offered under the MIT license in `LICENSE`.
+

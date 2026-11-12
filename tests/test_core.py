@@ -31,3 +31,21 @@ def test_censoring_and_reproducibility():
     t2,h2 = simulate_fpt(n_traj=30,max_time=0.02,dt=0.01,seed=7)
     assert np.array_equal(t,t2) and np.array_equal(h,h2)
     assert np.all(t[~h] == .02) and np.any(~h)
+
+
+
+def test_variable_diffusion_flat_exact():
+    # D(x)=1+x on [0,1], reflecting 0, absorbing 1.
+    # T(0)=integral_0^1 y/(1+y)dy = 1-log(2).
+    estimate = mfpt_quadrature(0., 0., 1., flat, lambda x: 1+x, ngrid=10001)
+    assert np.isclose(estimate, 1-np.log(2), rtol=1e-7)
+
+
+def test_fpt_simulation_agrees_with_quadrature_with_sampling_margin():
+    # Fixed, moderate resolution; this exercises the simulation and the event flags.
+    # Statistical tolerance also allows for endpoint-detection bias at finite dt.
+    t, hit = simulate_fpt(n_traj=3000, dt=0.002, max_time=120., seed=2026)
+    assert hit.all()
+    exact = mfpt_quadrature(-1., -2., 1.)
+    se = t.std(ddof=1)/np.sqrt(len(t))
+    assert abs(t.mean()-exact) < 4*se + 0.20
