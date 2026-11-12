@@ -63,10 +63,24 @@ def grid_mfpt(Q, target=-1):
 
 def simulate_fpt(n_traj=2000, dt=0.002, max_time=150.0, x0=-1.0,
                  a=-2.0, b=1.0, D=1.0, beta=1.0, barrier=2.0, seed=42):
-    """Return observed time and hit flag; censored times equal max_time.
+    """Simulate independent first-passage experiments in a double well.
 
-    Euler–Maruyama endpoint crossings; left reflection uses repeated folding.
-    Time is rounded upward to a full step. Decrease dt to assess crossing bias.
+    The continuous model starts every trajectory at ``x0`` with reflecting
+    wall ``a`` and absorbing target ``b``. The potential is
+    ``barrier * (x*x - 1)**2``; D is constant and beta is inverse temperature.
+    ``dt`` and ``max_time`` are in the same time units.
+
+    Returns (observed_times, hit), both shape (n_traj,). The observed time is
+    min(first detected crossing, max_time); hit=False denotes right censoring.
+    Averaging all times estimates a restricted mean if any paths are censored.
+
+    Euler–Maruyama checks the absorbing boundary only at step endpoints, and
+    reflects an endpoint that overshoots the left wall via ``a + abs(x-a)``.
+    Both operations are approximations to the continuous reflected process;
+    a path can cross and return between endpoints. Compare smaller dt values
+    and quantify independent-trajectory sampling uncertainty before relying
+    on a simulated MFPT. This simple scheme is intended for moderate steps
+    and barriers, not as a production rare-event algorithm.
     """
     if n_traj < 1 or dt <= 0 or max_time <= 0 or D <= 0 or not a <= x0 < b:
         raise ValueError("Invalid simulation parameters")
@@ -88,3 +102,4 @@ def simulate_fpt(n_traj=2000, dt=0.002, max_time=150.0, x0=-1.0,
         hit[ids[newly]] = True
         x[ids] = proposal
     return times, hit
+

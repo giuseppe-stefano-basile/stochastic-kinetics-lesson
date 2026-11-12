@@ -1,5 +1,7 @@
 # Derivations: stochastic dynamics and first passage
 
+New to stochastic processes? Begin with [the foundations chapter](00_foundations.md) and its companion notebook.
+
 ## 1. Probability and a stochastic trajectory
 
 A process X_t is a family of random variables. A trajectory is one realization. The transition density p(x,t|x0,0) represents an ensemble conditional on X_0=x0. For Brownian motion W, increments over disjoint intervals are independent Gaussian random variables with mean 0 and variance equal to interval length. Thus ΔW=√Δt ξ, ξ~N(0,1). Informally (ΔW)² contributes at order Δt; individual trajectories are almost surely nondifferentiable. White noise is a distributional derivative, not an ordinary function.
@@ -67,3 +69,4 @@ For uniform nodes x_i, spacing h, define Q_{i,i+1}=D/h² exp[−β(F_{i+1}−F_i
 ## 8. Molecular interpretation and limitations
 
 For collective variable s(R), p_eq(s)=∫δ(s−s(R))ρ_eq(R)dR and F(s)=−kBT ln p_eq(s)+C. Integrating out coordinates generally introduces memory and coordinate-dependent transport. A 1D Markov diffusion is a testable approximation, not a consequence of knowing F(s). Check lag-time dependence, Markov/Chapman–Kolmogorov tests, conditional relaxation, first-passage predictions, and sensitivity to state boundaries; distinguish force-field error, uncertainty in F and D, and model error. Recovering a free energy from metadynamics does not automatically recover unbiased trajectory kinetics.
+

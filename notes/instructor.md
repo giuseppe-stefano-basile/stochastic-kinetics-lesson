@@ -19,3 +19,15 @@ Ask students to predict each outcome before running it. Assign pairs to differen
 ## Numerical and statistical notes
 
 Euler–Maruyama uses Gaussian endpoint increments. Reflecting overshoots via a+|x−a| approximates a reflecting wall; an endpoint-only absorption misses bridge crossings. Check dt, dt/2 and dt/4 and report uncertainty. Never claim convergence just because curves look close. The teaching code is for moderate barriers and stable steps; extreme barriers may overflow exponentials and require log-domain quadrature. For a bounded domain with F=0, grid and continuum results agree in the limit h→0, not exactly for finite h.
+
+
+## Foundations notebook: teaching notes and worked answers
+
+Allow 60–90 additional minutes if this material is new. It can also be assigned as preparation. The foundations notebook has executable numerical experiments, prediction questions and a derivation exercise. The 150-minute schedule in the README describes the later session, not the additional foundations time.
+
+1. For independent draws, sample SD approaches the population SD (one for a standard normal), while the standard error of the mean decreases approximately as $N^{-1/2}$. The particular sample mean fluctuates across repetitions; a standard error is not a deterministic error bound.
+2. For free Brownian motion, the mean remains at the initial point and variance is $2Dt$. If the discrete increment instead has amplitude proportional to $\Delta t$, the variance after $t/\Delta t$ steps is proportional to $t\Delta t$ and tends to zero. Independent paths give independent endpoint samples; consecutive observations on one path are correlated.
+3. With $\lambda=D\beta\kappa$, take $f(x)=x$: $\mathcal Lf=-\lambda x$, so $m'=-\lambda m$ and $m=x_0e^{-\lambda t}$. With $f=x^2$, $\mathcal Lf=-2\lambda x^2+2D$. Thus $M_2'=-2\lambda M_2+2D$, and for fixed $x_0$, $M_2=x_0^2e^{-2\lambda t}+(D/\lambda)(1-e^{-2\lambda t})$. Subtract $m^2$ to get the notebook's variance. The Euler scheme has finite-step bias; exact curves are continuous-time references, not exact predictions for the discretization.
+4. In the exponential example, the observed-events-only average selects early arrivals. The restricted mean is $\int_0^T e^{-t/4}dt=4(1-e^{-T/4})$, not 4. The common horizon gives no information about the survival tail beyond it without additional data or a model.
+
+The original root-level `01_student.ipynb` is an independently saved notebook; the course route in the README uses the notebooks under `notebooks/`. Avoid replacing a student's existing outputs or answers when distributing updates.
