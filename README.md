@@ -1,0 +1,55 @@
+# Stochastic kinetics: from Langevin trajectories to Fokker–Planck
+
+A hands-on, mathematically grounded introduction for advanced undergraduates and beginning graduate students. Starting from a single overdamped particle, you will derive the forward and backward equations, calculate first-passage times, and test predictions against simulation and a discrete generator.
+
+## Learning goals
+- Connect trajectories, transition probabilities and probability density.
+- Derive the Itô generator, Fokker–Planck equation and probability current.
+- Distinguish equilibrium from kinetics and explain boundary conditions.
+- Compute and validate mean first-passage times (MFPTs) and committors.
+- Recognize when a molecular collective variable may not be Markovian.
+
+## Quick start
+
+Python 3.10+ recommended. In a terminal:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
+python -m pip install -e '.[teaching]'
+jupyter lab
+```
+
+Open `notebooks/01_student.ipynb` from the repository root. Alternatively upload the entire repository to a notebook environment and install with `pip install -e .`; no network or external dataset is needed after installation. The student notebook contains tasks and runnable starter cells; `02_instructor.ipynb` gives worked code and results. Read `notes/derivations.md` alongside them. Execute cells in order. Plotting requires a notebook kernel. Run `python -m pytest` for automated checks.
+
+## Suggested 150-minute class
+
+| Minutes | Topic |
+|---|---|
+| 0–10 | Prediction: same equilibrium, different kinetics |
+| 10–30 | Brownian motion, noise scaling, ensemble variance |
+| 30–50 | Generator, forward equation and current |
+| 50–70 | Double well and Boltzmann distribution |
+| 70–80 | Break |
+| 80–100 | First passage, survival and boundaries |
+| 100–125 | Derive the backward MFPT equation |
+| 125–145 | Compare trajectories, quadrature, discrete generator |
+| 145–150 | Molecular interpretation and limitations |
+
+For 90 minutes, demonstrate sections 3 and 6, and assign the committor as homework. Sections marked extension are optional. Instructor notes contain suggested answers and numerical cautions.
+
+## Contents
+
+- `notebooks/01_student.ipynb`: scaffold, predictions and exercises.
+- `notebooks/02_instructor.ipynb`: executable solutions and diagnostics.
+- `notes/derivations.md`: detailed mathematical development and assumptions.
+- `notes/instructor.md`: timings, expected answers, choices and pitfalls.
+- `notes/references.md`: references and repository attribution.
+- `src/stochkin/`: short transparent numerical implementations.
+- `tests/`: analytic and numerical validation.
+
+The model uses dimensionless units: beta=1, length scale=1, D=1 by default. A simulation step observes the process only at discrete times; reflection by folding and absorption by endpoint crossing approximate continuous boundaries. Check convergence in the step size. The grid generator is a continuous-time Markov-chain approximation and its boundary is a grid node, not an exact continuum boundary at finite spacing.
+
+## Attribution and license
+
+Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/HandsOnSession_CMLS), particularly its Langevin, MSM and Fokker–Planck tutorial. This project implements its own model and code and does not redistribute files from that repository. Consult the original repository's license before reusing its material. Original material here is offered under the MIT license in `LICENSE`.

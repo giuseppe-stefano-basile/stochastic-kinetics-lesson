@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stochkin-lesson"
+version = "0.1.0"
+description = "Teaching stochastic kinetics with Langevin and Fokker–Planck models"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.23", "scipy>=1.9", "matplotlib>=3.6"]
+
+[project.optional-dependencies]
+teaching = ["jupyterlab>=4", "pytest>=7", "nbclient>=0.8", "nbformat>=5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
