@@ -26,14 +26,17 @@ Start with `notes/00_foundations.md` and `notebooks/00_foundations.ipynb`, then 
 
 Students new to probability should complete the foundations chapter and notebook before class, if possible.
 
+The root-level `01_student.ipynb` is an earlier independent copy, retained for reference. Use the maintained version in `notebooks/`.
+
 ## Contents
 
 - `notes/00_foundations.md`: a beginner introduction to probability, Brownian motion and the Fokker–Planck equation.
 - `notebooks/00_foundations.ipynb`: worked numerical introduction and guided exercises.
-- `notebooks/01_student.ipynb`: scaffold, predictions and exercises.
+- `notebooks/01_student.ipynb`: maintained student lesson with predictions and exercises.
+- `notebooks/03_kinetics_investigation.ipynb`: guided double-well investigation.
 - `notebooks/02_instructor.ipynb`: executable solutions and diagnostics.
 - `notes/derivations.md`: detailed mathematical development and assumptions.
-- `notes/instructor.md`: timings, expected answers, choices and pitfalls.
+- `notes/instructor.md`: expected answers, teaching choices and pitfalls.
 - `notes/references.md`: references and repository attribution.
 - `src/stochkin/`: short transparent numerical implementations.
 - `tests/`: analytic and numerical validation.
@@ -55,8 +58,9 @@ pdflatex stochastic_kinetics.tex
 pdflatex stochastic_kinetics.tex
 ```
 
-The slides include the introductory material and the main hands-on lesson. Plan an additional 60–90 minutes for students who are new to stochastic processes, or assign the foundations as preparation.
+The slides include the introductory material and the main hands-on lesson.
 
 ### Guided kinetics investigation
 
-Open `notebooks/03_kinetics_investigation.ipynb` for a single double-well experiment connecting the backward equation, simulated first passages, grid refinement, censoring and parameter changes. For the Beamer density comparison, `python slides/generate_density_data.py` regenerates the CSV data in the current directory (NumPy and SciPy required). The slide source embeds the displayed coordinates and builds without Python. The enlarged slide deck is a full teaching resource; use the introduction as preparation and select advanced slides according to the available class time.
+Open `notebooks/03_kinetics_investigation.ipynb` for a single double-well experiment connecting the backward equation, simulated first passages, grid refinement, censoring and parameter changes. For the Beamer density comparison, `python slides/generate_density_data.py` regenerates the CSV data in the current directory (NumPy and SciPy required). The slide source embeds the displayed coordinates and builds without Python. The slide deck includes core material and optional extensions.
+
