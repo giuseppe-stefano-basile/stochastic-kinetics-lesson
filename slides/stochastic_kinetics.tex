@@ -34,7 +34,7 @@
 \end{frame}
 \begin{frame}{Road map and learning objectives}
 \begin{enumerate}\item Probability, ensembles and Brownian motion.\item Langevin dynamics and the Fokker--Planck equation.\item First passage, numerical comparisons and molecular limits.\end{enumerate}
-\vspace{0.4cm}\textbf{Afterwards:} derive the main equations, run the examples and identify when assumptions may fail. The foundations require 60--90 minutes of preparation or additional class time.
+\vspace{0.4cm}\textbf{Afterwards:} derive the main equations, run the examples and identify when assumptions may fail.
 \end{frame}
 \begin{frame}{A probability density is not a probability}
 A random variable $X$ has density $p(x)$ when
@@ -75,6 +75,15 @@ A particle starts in the left well. How long until it first reaches the right we
 \item Vary $D$, barrier height and target. Check statistical and numerical errors.
 \end{enumerate}
 \end{frame}
+\begin{frame}{A map of the objects in this lesson}
+\begin{itemize}
+\item $X_t$: one random position at time $t$. One realization across time is a trajectory.
+\item $p(x,t)$: density of positions in an ensemble prepared in the same way.
+\item $F(x)$: free-energy landscape. $D(x)$: diffusion coefficient.
+\item $\tau_b$: random first-passage time. $T(x)=\mathbb E_x[\tau_b]$: its mean for a specified starting point and target.
+\end{itemize}
+\vspace{0.2cm}A density describes where the ensemble is. First passage describes when an event first occurs.
+\end{frame}
 \begin{frame}{Brownian motion: the noise model}
 Standard Brownian motion $W_t$ has independent increments
 \[\Delta W=W_{t+\Delta t}-W_t\sim\mathcal N(0,\Delta t).\]
@@ -100,7 +109,7 @@ An underdamped Langevin model reads
 \begin{frame}{Overdamped Langevin equation}
 For constant mobility $\mu=1/\zeta$, define $D=\mu k_BT$ and $\beta=(k_BT)^{-1}$. Then
 \[\boxed{\dd X_t=-D\beta F'(X_t)\,\dd t+\sqrt{2D}\,\dd W_t.}\]
-The first term is drift. The second describes diffusion.
+The first term is drift. The second describes diffusion. $F$ is the modeled free-energy landscape.
 \begin{block}{Modeling assumption}Using a free energy $F$ and Markovian diffusion for a molecular collective variable is an additional approximation.\end{block}
 \end{frame}
 \begin{frame}{Euler--Maruyama: simulate the model}
@@ -137,7 +146,16 @@ For $\Delta X=a\Delta t+\sqrt{2D}\Delta W+o(\sqrt{\Delta t})$, expand
 Dividing by $\Delta t$ and taking the limit gives
 \[\lim_{\Delta t\to0}\frac{\E_x[f(X_{\Delta t})]-f(x)}{\Delta t}
 =a(x)f'(x)+D(x)f''(x)=\mathcal Lf(x).\]
-The finite-variation and quadratic-variation terms both contribute.
+The first conditional moment gives drift. The second gives diffusion. Both survive as $\Delta t\to0$.
+\end{frame}
+\begin{frame}{Why use a test function?}
+A smooth function $f(x)$ represents an observable, such as $f(x)=x$ or $f(x)=x^2$. Its mean can be obtained from the density:
+\[\mathbb E[f(X_t)]=\int f(x)p(x,t)\,\dd x.\]
+\begin{itemize}
+\item The stochastic equation tells us how the observable changes.
+\item Integration by parts transfers derivatives to the density.
+\item Requiring the identity for suitable $f$ determines the density equation.
+\end{itemize}
 \end{frame}
 \begin{frame}{Backward generator and forward density equation}
 Define the backward generator acting on an observable $f$:
@@ -169,7 +187,7 @@ These boundary conditions cancel the corresponding boundary terms.
 \end{frame}
 \begin{frame}{Probability current and equilibrium}
 \[\partial_t p=-\partial_xJ,\qquad J=ap-\partial_x(Dp).\]
-For constant $D$, with $a=-D\beta F'$,
+For constant $D$, with drift $a=-D\beta F'$,
 \[J=-D(\beta F'p+\partial_xp).\]
 A normalizable zero-current equilibrium is $p_{\mathrm{eq}}(x)=Z^{-1}e^{-\beta F(x)}$.
 \end{frame}
@@ -301,6 +319,14 @@ Q_{i+1,i}=\frac{D}{h^2}e^{+\beta\Delta F_i/2}.
 With $Q_{ii}=-\sum_{j\ne i}Q_{ij}$, row probabilities satisfy $\dot p=pQ$ and $\pi_i\propto e^{-\beta F_i}$ satisfies detailed balance: $\pi_iQ_{ij}=\pi_jQ_{ji}$. For a target removed from the transient set $S$,
 \[-Q_{SS}\,\mathbf T=\mathbf 1.\]
 \end{frame}
+\begin{frame}{The same experiment, three calculations}
+\begin{itemize}
+\item \textbf{Trajectories:} sample the first-hit time and estimate a mean and uncertainty.
+\item \textbf{Backward equation:} solve the continuous model for the mean time.
+\item \textbf{Grid generator:} solve the corresponding finite-state approximation.
+\end{itemize}
+Match $F$, $D$, starting position and boundaries. Differences can reflect sampling, discretization or censoring.
+\end{frame}
 \begin{frame}{Hands-on 3: compare three routes}
 \textbf{Open:} \texttt{notebooks/03\_kinetics\_investigation.ipynb}, sections 1--4.
 \begin{enumerate}\item Simulate independent first-passage trajectories.\item Evaluate the backward-equation integral by quadrature.\item Solve a discrete generator equation $-Q_{SS}T=\mathbf 1$.\end{enumerate}
@@ -347,7 +373,7 @@ For reactant $A$ and product $B$, the forward committor is
 \[q(x)=\Pr_x(\tau_B<\tau_A),\qquad \mathcal Lq=0.\]
 Boundary conditions: $q(a)=0$, $q(b)=1$. For variable $D$ in equilibrium,
 \[q(x)=\frac{\int_a^x e^{\beta F(y)}/D(y)\,\dd y}{\int_a^b e^{\beta F(y)}/D(y)\,\dd y}.\]
-MFPT asks \emph{how long}; the committor asks \emph{which state first}.
+\textbf{Optional extension.} MFPT asks \emph{how long}; the committor asks \emph{which state first}.
 \end{frame}
 \begin{frame}{From the toy model to molecules}
 For a collective variable $s(\mathbf R)$, define the equilibrium marginal and free energy
@@ -393,3 +419,4 @@ Read \texttt{notes/00\_foundations.md} and \texttt{notes/derivations.md} for ful
 \end{itemize}
 \end{frame}
 \end{document}
+

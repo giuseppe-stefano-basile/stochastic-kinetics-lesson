@@ -17,7 +17,7 @@ Taking expectations yields d E[f(X_t)]/dt = E[L f(X_t)], where the **backward ge
     ∂t p = L* p = -∂x(ap)+∂x²(Dp) = -∂x J,
     J = ap - ∂x(Dp).
 
-The forward equation evolves densities; L acts on observables of the initial point. The notation L and L* varies across textbooks. Under suitable regularity and boundary assumptions the same transition kernel solves the forward and backward equations in its final and initial coordinates, respectively.
+The forward equation evolves densities; L acts on observables of the initial point. On [a,b], the integration-by-parts boundary term is [f J + D p f']_a^b. A reflecting boundary has forward condition J=0 and backward condition f'=0. At a regular absorbing boundary, p=0 for the killed density and f=0 for a backward observable that vanishes at the target; these paired conditions cancel the boundary term. The notation L and L* varies across textbooks. Under suitable regularity and boundary assumptions the same transition kernel solves the forward and backward equations in its final and initial coordinates, respectively.
 
 ## 3. Equilibrium and variable diffusion
 
@@ -40,7 +40,7 @@ Let a<x<b, with a reflecting and b absorbing. In the forward equation reflection
 
 ## 5. Backward first-passage equation and integral
 
-Define τ_b=inf{t≥0:X_t≥b} and T(x)=E_x[τ_b], assumed finite. Dynamic programming or Dynkin's formula gives L T=−1 with the boundary conditions above. For equilibrium diffusion,
+Define τ_b=inf{t≥0:X_t≥b} and T(x)=E_x[τ_b], assumed finite. Let σ=min(Δt,τ_b). The Markov property gives T(x)=E_x[σ+T(X_σ)]; the target has T(b)=0. For an interior starting point, the small-time limit (or Dynkin's formula applied to the stopped process) gives L T=−1 with the boundary conditions above. For equilibrium diffusion,
 
     L T = e^(βF) d/dx [D e^(−βF) T'] = −1.
 
@@ -69,4 +69,5 @@ For uniform nodes x_i, spacing h, define Q_{i,i+1}=D/h² exp[−β(F_{i+1}−F_i
 ## 8. Molecular interpretation and limitations
 
 For collective variable s(R), p_eq(s)=∫δ(s−s(R))ρ_eq(R)dR and F(s)=−kBT ln p_eq(s)+C. Integrating out coordinates generally introduces memory and coordinate-dependent transport. A 1D Markov diffusion is a testable approximation, not a consequence of knowing F(s). Check lag-time dependence, Markov/Chapman–Kolmogorov tests, conditional relaxation, first-passage predictions, and sensitivity to state boundaries; distinguish force-field error, uncertainty in F and D, and model error. Recovering a free energy from metadynamics does not automatically recover unbiased trajectory kinetics.
+
 
