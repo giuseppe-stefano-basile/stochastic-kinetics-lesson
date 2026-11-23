@@ -36,6 +36,7 @@ The root-level `01_student.ipynb` is an earlier independent copy, retained for r
 - `notebooks/03_kinetics_investigation.ipynb`: guided double-well investigation.
 - `notebooks/02_instructor.ipynb`: executable solutions and diagnostics.
 - `notes/derivations.md`: detailed mathematical development and assumptions.
+- `notes/Stochastic_Kinetics_Instructor_Notes.pdf`: extended printable derivations and instructor reference ([LaTeX source](notes/Stochastic_Kinetics_Instructor_Notes.tex)).
 - `notes/instructor.md`: expected answers, teaching choices and pitfalls.
 - `notes/references.md`: references and repository attribution.
 - `src/stochkin/`: short transparent numerical implementations.

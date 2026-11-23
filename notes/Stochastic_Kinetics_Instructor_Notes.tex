@@ -1,0 +1,471 @@
+\pdfoutput=1
+\pdfmapfile{+cm.map}
+\pdfmapfile{+cmextra.map}
+\pdfmapfile{+symbols.map}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{booktabs,array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!55!black,citecolor=blue!45!black}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\allowdisplaybreaks
+\newcommand{\dd}{\mathrm d}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Lop}{\mathcal L}
+\newcommand{\peq}{p_{\mathrm{eq}}}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{remark}\newtheorem*{remark}{Physical interpretation}
+\title{\textbf{Stochastic kinetics from first principles}\\[4pt]\large Instructor's derivations for Langevin dynamics, Fokker--Planck equations and first-passage observables}
+\author{Lecture notes for Giuseppe Stefano Basile}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+These notes develop a coherent one-dimensional stochastic-kinetics model from probability and a Markov jump process through Langevin dynamics, forward and backward generators, boundary conditions, mean first-passage times, committors, and numerical validation. The detailed derivations are accompanied by physical interpretations, assumptions, counterexamples and questions an instructor may encounter. They complement the stochastic-kinetics teaching repository at commit \texttt{670529d}; this text is independent of the student-facing materials.
+\end{abstract}
+\tableofcontents
+\newpage
+\section{Scope, assumptions and conventions}
+A trajectory $X_t$ is a random position, not a random force. The probability density $p(x,t)$ describes an ensemble of preparations. The main model is a one-dimensional It\^o diffusion on an interval, with continuous free energy $F(x)$, inverse temperature $\beta=(k_BT)^{-1}$ and positive diffusion coefficient $D(x)$. We use $\Lop$ for the backward generator and $\Lop^*$ for its forward adjoint. Primes denote derivatives with respect to $x$. Unless specified otherwise, coefficients are sufficiently smooth, $D$ is bounded away from zero on a bounded interval, and derivatives and integrations below are legitimate. When boundaries are involved, the generator domain and boundary conditions must be specified. These assumptions yield transparent calculations; a full treatment of weak solutions, domains of unbounded operators and exceptional boundaries requires additional hypotheses \cite{vankampen,gardiner,risken}.
+
+\textbf{Energy units.} $F$ denotes energy per particle and $\beta=1/(k_BT)$. If $F$ is in molar energy units, use $\beta=1/(RT)$ consistently. The logarithm of a dimensional density is understood relative to a fixed reference measure: additive constants in $F$ are arbitrary. For a dimensionless coordinate $\tilde x=x/\ell$ and time $\tilde t=tD_0/\ell^2$, $\tilde D=D/D_0$ and $\tilde F=\beta F$.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule Symbol & Meaning and units \\
+\midrule $p(x,t)$ & density with respect to $x$, units $[x]^{-1}$ \\
+$a(x)$ & It\^o drift, units $[x]/[t]$ \\
+$D(x)$ & diffusion coefficient, units $[x]^2/[t]$ \\
+$J(x,t)$ & probability current, units $[t]^{-1}$ in 1D \\
+$\tau_B,T(x)$ & first hitting time of target $B$ and its mean \\
+$q(x)$ & probability of hitting $B$ before $A$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\section{Probability and Markov processes}
+\subsection{Random variables, ensembles and conditional probabilities}
+A probability space consists of outcomes $\omega$, measurable events and a probability measure. A random variable $X$ maps outcomes to numbers. If $p(x)$ is a density, $\Pp(c<X<d)=\int_c^d p(x)\dd x$ and $\int p\dd x=1$. For a function $f$, $\E[f(X)]=\int f(x)p(x)\dd x$. The mean and variance are
+\begin{equation}
+\mu=\E[X],\qquad \operatorname{Var}(X)=\E[X^2]-\mu^2.
+\end{equation}
+A density is not a probability at a point; the integral over an interval is. For independent samples $X_i$ of finite variance, $\operatorname{Var}(\bar X)=\operatorname{Var}(X)/N$ for $\bar X=N^{-1}\sum_iX_i$. The empirical standard error is $s/\sqrt N$. Correlated observations have additional covariance terms and do not supply $N$ independent samples. Specifically,
+\begin{equation}\operatorname{Var}(\bar X)=N^{-2}\sum_{i,j}\operatorname{Cov}(X_i,X_j).\end{equation}
+
+A stochastic process is a collection $\{X_t:t\geq0\}$ of random variables. Fixing $\omega$ produces a sample path $t\mapsto X_t(\omega)$; fixing $t$ produces a random variable. A conditional transition density $p(y,t\mid x,s)$ is a density in $y$ given $X_s=x$. An initial density $p_0(x)$ gives $p(y,t)=\int p(y,t\mid x,0)p_0(x)\dd x$.
+
+\subsection{Markov property and Chapman--Kolmogorov}
+A Markov process satisfies $\Pp(X_{t+h}\in B\mid\mathcal F_t)=\Pp(X_{t+h}\in B\mid X_t)$, where $\mathcal F_t$ contains the observed past. This statement is about the specified state $X_t$, not a guarantee that any projection of a Markov process is Markovian. For a time-homogeneous process with $p_t(y\mid x)$, conditioning on an intermediate point and applying the Markov property proves
+\begin{equation}\label{CK}
+p_{t+s}(y\mid x)=\int p_t(y\mid z)p_s(z\mid x)\,\dd z.
+\end{equation}
+This is the Chapman--Kolmogorov relation. Agreement at selected lag times is useful model evidence but does not prove Markovianity on all scales. Equation \eqref{CK} is formulated for the full transition kernel; testing it after a coarse discretization also involves discretization errors \cite{vankampen}.
+
+\section{A bridge from random walks to the Fokker--Planck equation}
+\subsection{Master equation}
+Let $p_i(t)$ be the probability of discrete state $i$ and $q_{ij}\geq0$ the transition rate from $i$ to $j$. With $q_{ii}=-\sum_{j\ne i}q_{ij}$ and a row probability vector,
+\begin{equation}\dot p_i=\sum_{j\ne i}[p_jq_{ji}-p_iq_{ij}],\qquad \dot{\mathbf p}=\mathbf p Q.\end{equation}
+Summing over $i$ gives zero: every gain is another state's loss. In the first equality the first index of $q_{ij}$ is the \emph{origin}. With a column convention all matrices transpose. For a time-independent finite generator, $P(t)=e^{tQ}$ is a stochastic transition matrix. Discrete state dynamics can represent reaction counts or a discretized position, but not all Markov processes are diffusions.
+
+\subsection{Derivation of free diffusion from a symmetric walk}
+Consider positions $x_i=ih$ with independent jumps left and right at rate $D/h^2$ each. Then
+\begin{equation}\dot p_i=\frac{D}{h^2}(p_{i-1}-2p_i+p_{i+1}).\end{equation}
+Write $p_i(t)\simeq h p(ih,t)$ and use Taylor's theorem:
+$p(x\pm h)=p\pm hp_x+\tfrac12h^2p_{xx}+O(h^3)$. The odd terms cancel, and as $h\to0$,
+\begin{equation}\label{heat}\partial_t p=D\partial_x^2p.\end{equation}
+The diffusion coefficient follows also from short-time increments: each jump has squared size $h^2$ and the total jump rate is $2D/h^2$, so $\E[(\Delta X)^2]=2D\Delta t+o(\Delta t)$. This shows why the coefficient in the SDE is $\sqrt{2D}$.
+
+\subsection{Kramers--Moyal expansion and its limitations}
+For a Markov process with sufficiently regular transition kernel define conditional moments, when the limits exist,
+\begin{equation}D^{(n)}(x)=\lim_{\Delta t\downarrow0}\frac{1}{n!\,\Delta t}\E[(X_{t+\Delta t}-X_t)^n\mid X_t=x].\end{equation}
+A formal expansion of the master equation gives $\partial_t p=\sum_{n\geq1}(-\partial_x)^n[D^{(n)}p]$. For an It\^o diffusion $D^{(1)}=a$, $D^{(2)}=D$ and higher conditional coefficients vanish under suitable conditions. A general jump process may retain infinitely many terms: discarding terms beyond second order is an approximation, not a universal identity. The Pawula restriction is a further positivity result under its assumptions; it is not a license to approximate arbitrary jump processes by diffusions without checking \cite{vankampen,risken}.
+
+\section{Brownian motion and the stochastic integral}
+Standard Brownian motion $W_t$ starts at zero, has almost surely continuous paths and independent increments $W_t-W_s\sim\mathcal N(0,t-s)$ for $t>s$. Its paths are almost surely nondifferentiable. The notation $\xi(t)=\dot W_t$ for Gaussian white noise is distributional; $\E[\xi(t)\xi(s)]=\delta(t-s)$ is interpreted under integration. In particular,
+\begin{equation}\E[\Delta W]=0,\qquad \E[(\Delta W)^2]=\Delta t.\end{equation}
+The quadratic variation over $[0,t]$ is $[W]_t=t$ in the appropriate limiting sense; individual $\Delta W^2$ are not deterministically equal to $\Delta t$. It is the accumulated quadratic variation, not an ordinary derivative, that matters.
+
+For an adapted, square-integrable process $b_t$, the It\^o integral is constructed using left-endpoint sums $\sum_i b_{t_i}(W_{t_{i+1}}-W_{t_i})$. For a simple adapted process, independence of the next increment gives zero expectation and the It\^o isometry
+\begin{equation}\E\left[\left(\int_0^t b_s\,\dd W_s\right)^2\right]=\E\left[\int_0^t b_s^2\,\dd s\right].\end{equation}
+The general result follows by completing simple processes in the appropriate mean-square norm. The left endpoint is part of the definition; stochastic integrals with other conventions generally require a drift conversion \cite{gardiner}.
+
+\subsection{Free diffusion: exact density and moments}
+For $\dd X_t=\sqrt{2D}\dd W_t$ with deterministic $X_0=x_0$ and $D>0$, the integral solution is $X_t=x_0+\sqrt{2D}W_t$, so
+\begin{equation}\E[X_t]=x_0,\qquad \operatorname{Var}(X_t)=2Dt,\qquad
+p(x,t\mid x_0)=\frac{e^{-(x-x_0)^2/(4Dt)}}{\sqrt{4\pi Dt}}.\end{equation}
+Direct differentiation verifies Eq.~\eqref{heat}; it also follows from the Fourier transform. Typical displacements grow as $\sqrt t$ but their variance grows as $t$. For non-deterministic $X_0$ independent of $W$, $\operatorname{Var}(X_t)=\operatorname{Var}(X_0)+2Dt$.
+
+\section{It\^o dynamics and the generators}
+Consider the It\^o SDE
+\begin{equation}\label{sde}\dd X_t=a(X_t)\dd t+\sqrt{2D(X_t)}\,\dd W_t.\end{equation}
+It abbreviates an integral equation. For standard local-Lipschitz and appropriate non-explosion conditions, solutions exist and are unique up to the specified stopping or reflection rules; smoothness and positivity alone do not replace every global existence condition.
+
+\subsection{Derivation of It\^o's formula}
+For $f\in C^2$ expand $f(X+\Delta X)$ to second order. In a short interval $\Delta X=a\Delta t+\sqrt{2D}\Delta W$ to leading order. The drift squared and drift--noise cross term vanish at order $\Delta t$, whereas quadratic variation gives $(\Delta X)^2\to2D\Delta t$ in the accumulated limit. Thus
+\begin{equation}\label{ito}\dd f(X_t)=[a f'+Df''](X_t)\dd t+\sqrt{2D(X_t)}f'(X_t)\dd W_t.\end{equation}
+For $f=f(x,t)$ add $\partial_t f\dd t$. This is a derivation of the formula's structure; making the limiting argument rigorous uses convergence in probability/mean square and localization. The extra $Df''$ term is absent from the ordinary differentiable chain rule.
+
+\subsection{Backward generator and conditional moments}
+For sufficiently regular $f$ in the generator domain,
+\begin{equation}\Lop f(x)=\lim_{h\downarrow0}\frac{\E_x[f(X_h)]-f(x)}{h}=a(x)f'(x)+D(x)f''(x).\end{equation}
+Taking expectations in \eqref{ito}, when the stochastic integral is a true martingale, yields $\frac{\dd}{\dd t}\E[f(X_t)]=\E[\Lop f(X_t)]$. In the interior,
+\begin{equation}\E[\Delta X\mid X_t=x]=a(x)\Delta t+o(\Delta t),\quad
+\E[(\Delta X)^2\mid X_t=x]=2D(x)\Delta t+o(\Delta t).\end{equation}
+These coefficients refer to a local infinitesimal limit of the assumed Markov diffusion, not necessarily the measurable zero-lag limit of a smooth, inertial MD collective variable.
+
+\subsection{Forward equation from the adjoint}
+Assume a density exists and that all integration by parts is justified. Then
+\begin{align}\frac{\dd}{\dd t}\int f p\,\dd x
+&=\int(af'+Df'')p\,\dd x\\
+&=\int f[-\partial_x(ap)+\partial_x^2(Dp)]\,\dd x+\text{boundary terms}.
+\end{align}
+For test functions and boundary conditions cancelling the boundary terms, arbitrary $f$ gives the \emph{forward} Fokker--Planck equation
+\begin{equation}\label{fpe}\boxed{\partial_t p=\Lop^*p=-\partial_x(ap)+\partial_x^2(Dp)=-\partial_xJ,\quad J=ap-\partial_x(Dp).}\end{equation}
+The same Markov semigroup acts on initial-point observables by the backward equation and on final-point densities by the forward equation. Time-dependent or nonequilibrium processes require the corresponding two-parameter propagator and cannot always be treated by a time-independent exponential.
+
+\section{From microscopic forcing to overdamped dynamics}
+\subsection{Underdamped Langevin equation and fluctuation--dissipation}
+For mass $m$, position $x$, velocity $v$, friction $\zeta>0$ and potential energy $U(x)$, a commonly used isothermal model is
+\begin{equation}\dd x=v\dd t,\qquad m\dd v=[-U'(x)-\zeta v]\dd t+\sqrt{2\zeta k_BT}\,\dd W_t.\end{equation}
+This is a model for a thermal reservoir. The noise amplitude can be checked from equilibrium, not inferred by simply discarding friction. With $U=0$, $\lambda=\zeta/m$,
+\begin{equation}v_t=v_0e^{-\lambda t}+\frac{\sqrt{2\zeta k_BT}}{m}\int_0^te^{-\lambda(t-s)}\dd W_s.\end{equation}
+It\^o isometry gives $\operatorname{Var}(v_t)=(k_BT/m)(1-e^{-2\lambda t})$ for fixed $v_0$. The limiting variance is $k_BT/m$, the Maxwell--Boltzmann equipartition result $\frac12m\E[v^2]=\frac12k_BT$. In equilibrium $\langle v_t v_0\rangle=(k_BT/m)e^{-\zeta t/m}$.
+
+\subsection{Deriving the Einstein relation}
+For a free stationary velocity process, $x_t-x_0=\int_0^t v_s\dd s$. Therefore
+\begin{equation}\E[(x_t-x_0)^2]=2\int_0^t(t-s)C_v(s)\dd s,\quad C_v(s)=\frac{k_BT}{m}e^{-\zeta s/m}.\end{equation}
+At times long compared with $m/\zeta$, the slope divided by two approaches
+\begin{equation}\label{einstein}D=\int_0^\infty C_v(s)\dd s=\frac{k_BT}{\zeta}=\mu k_BT,\qquad \mu=1/\zeta.\end{equation}
+For slowly varying conservative forcing and separation between velocity relaxation and position evolution, the limiting overdamped dynamics with constant $\zeta$ is $\dd X=-\mu U'(X)\dd t+\sqrt{2D}\dd W$. This limiting argument is not a proof for arbitrary state-dependent friction: the noise-induced drift and limiting procedure must then be handled consistently \cite{gardiner,risken}.
+
+\subsection{Ornstein--Uhlenbeck process: exact calculation}
+For $F(x)=\kappa x^2/2$ and constant $D$, let $\lambda=D\beta\kappa$. The overdamped process satisfies $\dd X=-\lambda X\dd t+\sqrt{2D}\dd W$. By the integrating factor,
+\begin{equation}X_t=x_0e^{-\lambda t}+\sqrt{2D}\int_0^t e^{-\lambda(t-s)}\dd W_s.\end{equation}
+For deterministic $x_0$, the stochastic integral has zero mean, and It\^o isometry gives
+\begin{equation}\E[X_t]=x_0e^{-\lambda t},\qquad \operatorname{Var}(X_t)=\frac{D}{\lambda}(1-e^{-2\lambda t}).\end{equation}
+The stationary variance is $D/\lambda=1/(\beta\kappa)$, independent of $D$ at fixed $F$ and $T$. The relaxation time is $1/\lambda$. For Euler--Maruyama, $X_{n+1}=(1-\lambda h)X_n+\sqrt{2Dh}\xi_n$. Its stationary variance, if $0<\lambda h<2$, is $2Dh/[1-(1-\lambda h)^2]=D/[\lambda(1-\lambda h/2)]$, showing a finite-step bias even though the continuous solution is known.
+
+\section{Equilibrium, detailed balance and variable mobility}
+\subsection{Boltzmann distribution from zero current}
+For constant $D$ and $a=-D\beta F'$, Eq.~\eqref{fpe} gives
+\begin{equation}J=-D(\beta F'p+p'),\qquad\partial_t p=\partial_x[D(\beta F'p+p')].\end{equation}
+Under zero-current reflecting or natural equilibrium boundary conditions and a finite normalization $Z=\int e^{-\beta F}\dd x$, $J=0$ implies
+\begin{equation}\peq(x)=Z^{-1}e^{-\beta F(x)}.\end{equation}
+The profile specifies relative equilibrium probabilities for the chosen coordinate measure. It does not specify the clock: changing $D$ with $F$ and $T$ fixed leaves $\peq$ unchanged. Stationarity $\partial_t p=0$ alone means $J$ is spatially constant in one dimension; on a periodic domain this constant need not vanish. Detailed balance is stronger than stationarity.
+
+\subsection{Variable diffusion and It\^o versus Stratonovich}
+For $D=D(x)>0$, $J=ap-(Dp)'$. Enforcing $J=0$ for $p\propto e^{-\beta F}$ gives
+\begin{equation}\label{vard}\boxed{a_{\rm Ito}=D'-D\beta F',\quad
+\dd X=[D'-D\beta F']\dd t+\sqrt{2D}\,\dd W,}\end{equation}
+\begin{equation}\partial_t p=\partial_x\left[D e^{-\beta F}\partial_x(e^{\beta F}p)\right].\end{equation}
+This is the equilibrium-consistent \emph{It\^o} form. If $\dd X=a_S\dd t+b(X)\circ\dd W$ is Stratonovich, its It\^o drift is $a_I=a_S+\frac12bb'$. With $b=\sqrt{2D}$, $\frac12bb'=D'/2$ and the equivalent Stratonovich drift is $a_S=D'/2-D\beta F'$. Simply inserting $D(x)$ into the constant-$D$ drift in It\^o convention produces, under suitable zero-current conditions, a different stationary density proportional to $e^{-\beta F}/D$. This is an instructive counterexample \cite{risken,gardiner}.
+
+\subsection{A proof of equilibrium relaxation in the reversible model}
+Put $u=p/\peq$, so $J=-D\peq u'$. Assume reflecting/no-flux boundaries and strictly positive normalized $p,\peq$. The relative entropy $\mathcal H[p\mid\peq]=\int p\ln(p/\peq)\dd x$ satisfies
+\begin{align}\frac{\dd\mathcal H}{\dd t}
+&=\int (1+\ln u)\partial_t p\dd x
+=-\int (1+\ln u)J'\dd x\\
+&=-\int Dp[\partial_x\ln u]^2\dd x\leq0.
+\end{align}
+Boundary terms vanish by no flux. This shows monotonic decrease under the stated reversible model, not an unconditional proof of exponential convergence or a specific mixing time. Equality implies constant $u$ on a connected domain with $D,p>0$.
+
+\section{Boundary conditions, probability flux and first passage}
+On $[a,b]$, integrate the forward equation:
+\begin{equation}\frac{\dd}{\dd t}\int_a^b p\dd x=J(a,t)-J(b,t).\end{equation}
+A reflecting boundary has $J(a,t)=0$; no probability crosses it. At a regular absorbing boundary $b$, the \emph{killed} density has $p(b,t)=0$, and probability leaving through $b$ is not re-injected. With one reflecting and one absorbing boundary the density is subnormalized.
+
+For a smooth test function $f$, explicit integration by parts gives the adjoint boundary identity
+\begin{equation}\label{adjoint}\int_a^b(\Lop f)p\dd x-\int_a^b f(\Lop^*p)\dd x=\big[fJ+Dp f'\big]_a^b.\end{equation}
+At a reflecting boundary, $J=0$ in the forward domain and $f'=0$ in the corresponding backward domain. At a regular absorbing boundary the forward killed density satisfies $p=0$, while a backward observable with zero payoff on absorption satisfies $f=0$. The paired conditions cancel \eqref{adjoint}. Other boundary models, including partially absorbing boundaries, have different domains and are not equivalent.
+
+For an initial position $x_0<b$ define $\tau_b=\inf\{t\geq0:X_t\geq b\}$. The event, initial preparation, domain and boundary conditions are all part of the observable. The killed density satisfies
+\begin{equation}S(t\mid x_0)=\Pp_{x_0}(\tau_b>t)=\int_a^b p(x,t\mid x_0)\dd x,\quad
+-\partial_t S=J(b,t),\end{equation}
+where the last identity assumes a reflecting $a$ and regular absorption at $b$. The outward flux is the first-passage density if this density exists.
+
+\section{Backward first-passage equations and explicit formulas}
+\subsection{Dynkin's formula and the MFPT boundary problem}
+Let $\sigma=t\wedge\tau_b$. For suitable $f$ and a reflected process with $f'(a)=0$, It\^o's formula stopped at $\sigma$ gives Dynkin's identity
+\begin{equation}\E_x[f(X_\sigma)]=f(x)+\E_x\left[\int_0^\sigma(\Lop f)(X_s)\dd s\right].\end{equation}
+For $T(x)=\E_x[\tau_b]$, assume $T$ is finite, sufficiently regular and belongs to the appropriate backward domain. Applying the strong Markov property at $\sigma$,
+\begin{equation}T(x)=\E_x[\sigma+T(X_\sigma)],\qquad T(b)=0.\end{equation}
+Comparison with Dynkin's formula, or the interior infinitesimal limit, gives
+\begin{equation}\label{mfptbvp}\boxed{\Lop T(x)=-1,\quad T'(a)=0,\quad T(b)=0.}\end{equation}
+Conversely, if a suitable nonnegative solution $u$ of this boundary problem obeys the necessary integrability and limit conditions, stopping Dynkin's formula at $t\wedge\tau_b$ and taking $t\to\infty$ identifies $u(x)=\E_x\tau_b$. Those limit conditions are part of the theorem, not automatic for unbounded domains \cite{redner,vankampen}.
+
+\subsection{Integrating-factor derivation for position-dependent $D$}
+For the equilibrium It\^o process \eqref{vard},
+\begin{equation}\Lop T=e^{\beta F}\frac{\dd}{\dd x}\left[D e^{-\beta F}T'\right]=-1.\end{equation}
+Set $w=e^{-\beta F}$. Multiplication by $w$ and integration from $a$ to $y$ give
+\begin{equation}D(y)w(y)T'(y)-D(a)w(a)T'(a)=-\int_a^y w(z)\dd z.\end{equation}
+The reflecting condition removes the second term. Integrate $T'$ from $x$ to $b$, set $T(b)=0$, and obtain
+\begin{equation}\label{mfptformula}\boxed{T(x)=\int_x^b\dd y\,\frac{e^{\beta F(y)}}{D(y)}\int_a^y\dd z\,e^{-\beta F(z)}.}\end{equation}
+A constant shift of $F$ cancels. If the reflecting boundary is replaced by a natural boundary, an appropriate convergence condition and lower limit must replace $a$. The formula is not automatically a rate or a formula for a different target.
+
+\subsection{Free diffusion and the full first-passage law}
+For $F=0$ and constant $D$, Eq.~\eqref{mfptbvp} is $DT''=-1$. Direct integration yields $T'(x)=(a-x)/D$, hence
+\begin{equation}\label{flat}\boxed{T(x)=\frac{(b-a)^2-(x-a)^2}{2D}.}\end{equation}
+It is nonnegative, has units of time, satisfies both boundaries and vanishes at $b$. By contrast, for free Brownian motion on the full line starting at $x<b$, the first hit of $b$ occurs almost surely but has infinite mean. The reflecting left boundary prevents arbitrarily long excursions to $-\infty$ and changes the question. For the unbounded case, the reflection principle gives
+\begin{equation}\Pp_x(\tau_b\leq t)=\operatorname{erfc}\!\left(\frac{b-x}{\sqrt{4Dt}}\right),\quad
+f_{\tau}(t)=\frac{b-x}{\sqrt{4\pi D t^3}}e^{-(b-x)^2/(4Dt)}.\end{equation}
+Its $t^{-3/2}$ density tail makes $\E\tau_b=\infty$. Almost-sure arrival does not imply a finite mean.
+
+\subsection{Survival, moments and censoring}
+For any nonnegative random variable $\tau$, Tonelli's theorem applied to $\tau=\int_0^\infty\mathbf 1_{\{\tau>t\}}\dd t$ gives
+\begin{equation}\E\tau=\int_0^\infty\Pp(\tau>t)\dd t,\end{equation}
+with either side allowed to be infinite. More generally $\E[\tau^n]=n\int_0^\infty t^{n-1}S(t)\dd t$ for $n>0$ when defined. If the run is stopped at a common horizon $H$, the observed variable $Y=\min(\tau,H)$ obeys $\E Y=\int_0^H S(t)\dd t$. This restricted mean is not the full MFPT; averaging only successful hits is also generally biased. A zero observed censoring count is evidence of a small tail probability, not proof that the unobserved tail contributes negligibly to the mean. For $N$ independent trajectories the sample standard deviation of $Y$ divided by $\sqrt N$ estimates the standard error of its restricted mean; it does not include time-step bias or the missing tail.
+
+\section{Committor and the transition-state question}
+Let $\tau_A$ and $\tau_B$ be hitting times of disjoint target sets. The forward committor $q(x)=\Pp_x(\tau_B<\tau_A)$ is a probability and solves
+\begin{equation}\Lop q=0\quad\text{outside }A\cup B,\qquad q|_A=0,\quad q|_B=1,\end{equation}
+under regularity and appropriate boundary assumptions. This follows by stopping the process and applying the Markov property: $q(x)=\E_x[q(X_{t\wedge\tau_{A\cup B}})]$. In one dimension for absorbing endpoints $a,b$, substituting \eqref{vard} gives $(D e^{-\beta F}q')'=0$, hence
+\begin{equation}\boxed{q(x)=\frac{\int_a^x e^{\beta F(y)}/D(y)\dd y}{\int_a^b e^{\beta F(y)}/D(y)\dd y}.}\end{equation}
+For flat $F$ and constant $D$, $q=(x-a)/(b-a)$. The committor is a splitting probability, not an average transition time. In a multidimensional molecular system, a configuration with $q=1/2$ has equal probability to reach either set first. A one-dimensional coordinate can be poor if configurations with the same coordinate have substantially different committors; defining the sets and initial ensemble remains essential \cite{evanden,hummer2004}.
+
+\section{Rates, metastability and Kramers' approximation}
+For a start distribution $\rho_0$ in the reactant domain, $\E_{\rho_0}\tau_b=\int T(x)\rho_0(x)\dd x$. A point start, a restricted-equilibrium start, and a quasi-stationary start can yield different values. $1/\E\tau_b$ is simply the reciprocal of the specified mean. It need not be an equilibrium phenomenological rate or the inverse of the slowest relaxation time.
+
+A quasi-stationary distribution is invariant under evolution conditioned on survival. If initialized from it and the associated killed semigroup has decay rate $k$, then $S(t)=e^{-kt}$ and $\E\tau=1/k$ (assuming a proper distribution and finite mean). More generally, spectral separation may produce a long-time tail $S(t)\sim A e^{-k_1t}$ after initial relaxation. The asymptotic tail alone does not determine the full integral when the early transient matters. Recrossings and whether the target is the barrier or the product basin also matter.
+
+\subsection{High-barrier asymptotics and the factor of two}
+Take constant $D$, a reflecting point well to the left of a reactant minimum $x_A$, a barrier maximum $x^\ddagger>x_A$, and an absorbing target $b$ well beyond the barrier. Suppose $\beta\Delta F\gg1$, the minimum and barrier are nondegenerate, and both Gaussian neighborhoods are fully covered by the relevant integrals. Laplace's method applied to \eqref{mfptformula} gives
+\begin{equation}T(x_A)\approx\frac{2\pi}{D\beta\sqrt{F''(x_A)|F''(x^\ddagger)|}}e^{\beta[F(x^\ddagger)-F(x_A)]}.
+\end{equation}
+Indeed the inner integral is approximately $e^{-\beta F(x_A)}\sqrt{2\pi/(\beta F''(x_A))}$; the outer barrier integral is approximately $D^{-1}e^{\beta F(x^\ddagger)}\sqrt{2\pi/(\beta|F''(x^\ddagger)|)}$. Thus $k\approx1/T$ under the stated metastability and preparation assumptions. If the absorbing target is placed \emph{at} the barrier maximum, the outer Gaussian is only half included to leading order and the MFPT is approximately half the product-basin value. Finite boundaries, asymmetric wells, recrossing, position-dependent diffusion, low barriers or underdamped dynamics require additional care. General Kramers turnover cannot be inferred from this overdamped formula \cite{hanggi}.
+
+\section{From molecules to a one-dimensional model}
+Let $\mathbf R$ denote molecular configuration, and choose a scalar collective variable $s(\mathbf R)$. At equilibrium,
+\begin{equation}p_{\rm eq}(s)=\int\dd\mathbf R\,\rho_{\rm eq}(\mathbf R)\delta[s-s(\mathbf R)],\qquad F(s)=-k_BT\ln p_{\rm eq}(s)+C.\end{equation}
+The delta-function integral includes the geometric measure of the coordinate. This marginal equilibrium construction does \emph{not} prove that $s_t$ is an autonomous Markov diffusion: eliminated coordinates can carry memory and conditional heterogeneity. Molecular inertia also gives a ballistic short-time regime, so a diffusion coefficient inferred by dividing displacement variance by $2t$ requires an appropriate coarse-grained lag window, not an uncritical $t\to0$ limit of atomistic MD. Free-energy reconstruction using biased sampling does not by itself restore unbiased dynamical times \cite{hummer2005,besthummer}.
+
+\subsection{Coordinate transformations}
+For a smooth one-to-one map $y=g(x)$ with $g'\ne0$, probability conservation gives $p_y(y)=p_x(x)|\dd x/\dd y|$ and
+\begin{equation}F_y(y)=F_x(x)+k_BT\ln|g'(x)|+C,\quad D_y(y)=[g'(x)]^2D_x(x).\end{equation}
+It\^o's formula also gives $a_y=g'a_x+D_xg''$. Thus a free-energy barrier height by itself is coordinate-dependent. A consistently transformed process and transformed target have the same hitting time path by path; for a decreasing transformation the left and right boundaries interchange. A projection that discards degrees of freedom is not an invertible coordinate transformation \cite{besthummer}.
+
+\section{Numerical methods and validation}
+\subsection{Euler--Maruyama and boundary detection}
+For constant $D$ and $F$,
+\begin{equation}X_{n+1}=X_n-D\beta F'(X_n)\Delta t+\sqrt{2D\Delta t}\,\xi_n,\quad \xi_n\stackrel{\rm iid}{\sim}\mathcal N(0,1).\end{equation}
+The repository implements an endpoint-folding approximation at the reflecting boundary and endpoint-only hit detection at the target. A continuous trajectory may cross and return between recorded steps, so finite-step first-passage statistics need convergence checks. The quartic potential's drift is not globally Lipschitz; standard finite-time Euler convergence theorems cannot be invoked blindly for arbitrary step sizes or extreme excursions. Check numerical stability, finite values, and sensitivity to $\Delta t$, horizon and sample size. Monte Carlo uncertainty, discretization error and censoring are distinct. If finite censoring remains, compare like quantities, or justify/extrapolate the tail using an explicit model.
+
+\subsection{Finite-state approximation and detailed balance}
+On uniform nodes $x_i$, spacing $h$, define $F_i=F(x_i)$ and row-generator rates
+\begin{equation}Q_{i,i+1}=\frac{D}{h^2}e^{-\beta(F_{i+1}-F_i)/2},\qquad
+Q_{i+1,i}=\frac{D}{h^2}e^{+\beta(F_{i+1}-F_i)/2},\quad Q_{ii}=-\sum_{j\ne i}Q_{ij}.
+\end{equation}
+The off-diagonal rates are nonnegative and rows sum to zero. For $\pi_i\propto e^{-\beta F_i}$, $\pi_iQ_{i,i+1}=\pi_{i+1}Q_{i+1,i}$, proving detailed balance and $\pi Q=0$. A Taylor expansion of $Qf$ at an interior node gives $D f''-D\beta F'f'+O(h^2)$ for smooth $F,f$. Omitting outward jumps approximates reflecting boundaries; the finite-grid placement must be checked through refinement.
+
+For a target node $b$, make it absorbing and let $S$ contain the other nodes. A first-jump argument, or the backward equation, gives $-Q_{SS}\mathbf T=\mathbf1$, with $T_b=0$. The relevant matrix must be invertible; for a finite irreducible chain with a reachable target this holds. A discrete-time transition matrix $P(\tau)$ estimated from trajectory counts is not automatically this continuous-time generator; at finite lag the projected states may not be Markovian and a stochastic matrix need not possess a valid generator logarithm.
+
+\subsection{The repository's double well}
+For dimensionless $F(x)=H(x^2-1)^2$ with $H=2$, $\beta=D=1$, initial $x_0=-1$, reflecting $a=-2$ and target $b=1$, the integral is approximately $5.1293$ in the adopted time unit. A reflected grid generator with 51, 101 and 201 nodes gives approximately $5.1197$, $5.1269$ and $5.1287$, respectively. These are checks for this particular problem, not universal constants. Altering $b$ to zero measures first hitting the barrier rather than reaching the other well. Doubling $D$ divides every time in this autonomous model by two, while leaving the normalized equilibrium density unchanged. The sample means from finite-step trajectories have stochastic and numerical errors and should be reported with their parameters and uncertainty.
+
+\clearpage
+\part*{Extended derivations and teaching reference}
+\addcontentsline{toc}{part}{Extended derivations and teaching reference}
+The following sections expand the arguments used above. The forward and backward calculations deliberately use the same conventions and the same boundary experiment. Where the argument is a controlled mathematical proof under stated conditions we say so; where it is an asymptotic closure or a model assumption, it is identified as such.
+
+\section{Chapman--Kolmogorov to the forward equation}
+\subsection{The integral equation and the weak generator}
+Let $P_h(x,\dd y)$ be a time-homogeneous transition kernel and $\mu_t$ the distribution of $X_t$. The Chapman--Kolmogorov relation is equivalent to
+\begin{equation}
+\int f(y)\,\mu_{t+h}(\dd y)=\int \mu_t(\dd x)\int f(y)P_h(x,\dd y)
+\end{equation}
+for bounded measurable $f$. Suppose, for the test functions considered, that $(P_hf-f)/h\to\Lop f$ and that limits can be exchanged with integration. Subtract $\int f\,\dd\mu_t$, divide by $h$ and let $h\downarrow0$:
+\begin{equation}\label{weakck}
+\frac{\dd}{\dd t}\int f(x)\mu_t(\dd x)=\int \Lop f(x)\mu_t(\dd x).
+\end{equation}
+This weak form does not require differentiating a delta function or assuming a transition density. With a density $p$ and a sufficiently regular $f$, integration by parts turns \eqref{weakck} into the forward partial differential equation. The particular boundary domains determine whether the boundary terms vanish; they are part of the model rather than a consequence of Markovianity alone.
+
+\subsection{Conditional-moment derivation with the remainder visible}
+For $\Delta X=X_{t+h}-X_t$, set
+\begin{equation}
+M_n(x,h)=\E[(\Delta X)^n\mid X_t=x].
+\end{equation}
+Take $f\in C_c^3$ and expand $f(x+\Delta X)$ about $x$. If the following conditional limits exist,
+\begin{equation}
+M_1(x,h)=a(x)h+o(h),\quad M_2(x,h)=2D(x)h+o(h),\quad \E[|\Delta X|^3\mid x]=o(h),
+\end{equation}
+then the expectation of the Taylor remainder is $o(h)$ under a bounded-third-derivative condition. Thus
+\begin{equation}
+\frac{\E[f(X_{t+h})-f(X_t)\mid x]}h
+\longrightarrow a(x)f'(x)+D(x)f''(x).
+\end{equation}
+Inserting this into \eqref{weakck} and using compactly supported $f$ gives the interior equation $\partial_tp=-\partial_x(ap)+\partial_x^2(Dp)$. Extending the calculation up to a boundary requires the corresponding operator domain. For an It\^o diffusion with adequate local regularity, the conditional limits hold away from the boundary. The higher-moment condition rules out finite-rate jumps of nonzero size; for such jumps the third and higher terms can contribute at order $h$.
+
+The full Kramers--Moyal expansion is commonly written $\sum_{n\ge1}(-\partial_x)^n[D^{(n)}p]$; convergence and interchange of limits must be justified. A truncated series is not automatically a valid positive probability dynamics. Pawula's theorem, with its own regularity and positivity hypotheses, restricts exact finite truncations: an exact expansion terminating at a finite order beyond two is inconsistent with those hypotheses. Neither Pawula's theorem nor a good fit of the first two moments proves that an underlying projected molecular process is a diffusion \cite{vankampen,risken}.
+
+\section{A proof-oriented view of It\^o's formula}
+Let $X_t=X_0+\int_0^t a_s\dd s+\int_0^t b_s\dd W_s$ on a finite interval. Start with bounded adapted coefficients, a bounded derivative setting, and $f\in C^3$ with bounded derivatives; localization and approximation extend the result under standard hypotheses. For a partition $0=t_0<\cdots<t_N=t$ write
+\begin{equation}
+f(X_t)-f(X_0)=\sum_i f'(X_{t_i})\Delta X_i+\frac12\sum_i f''(X_{t_i})(\Delta X_i)^2+\sum_i R_i.
+\end{equation}
+The first sum converges to $\int f'a\dd s+\int f'b\dd W$ by the definitions of the ordinary and It\^o integrals. For the second, drift-square and drift--noise cross terms disappear in probability under the assumptions. The martingale-difference sum $\sum_i f''(X_{t_i})b_{t_i}^2[(\Delta W_i)^2-\Delta t_i]$ has variance bounded by a constant times $\sum_i(\Delta t_i)^2$, which tends to zero as the mesh goes to zero. The remaining term converges to $\int_0^t f''(X_s)b_s^2\dd s$. With continuous paths and bounded $f'''$, the cubic Taylor remainders vanish in probability. Therefore
+\begin{equation}
+f(X_t)-f(X_0)=\int_0^t\left[f'(X_s)a_s+\tfrac12 f''(X_s)b_s^2\right]\dd s+\int_0^t f'(X_s)b_s\dd W_s.
+\end{equation}
+For $b=\sqrt{2D}$, the second-order term is $Df''$. This is a proof under a deliberately restrictive starting set of assumptions. A full construction of the integral, convergence for general adapted integrands, localization and unbounded coefficients belongs to stochastic-analysis texts \cite{gardiner}.
+
+\paragraph{Check with $f(x)=x^2$.} Equation \eqref{sde} gives
+\begin{equation}\dd(X_t^2)=[2X_ta(X_t)+2D(X_t)]\dd t+2X_t\sqrt{2D(X_t)}\dd W_t.\end{equation} For an Ornstein--Uhlenbeck process, $a=-\lambda x$ and $D$ is constant. Taking expectations gives $M_2'=-2\lambda M_2+2D$, with $M_2(0)=x_0^2$. The integrating factor gives $M_2=x_0^2e^{-2\lambda t}+(D/\lambda)(1-e^{-2\lambda t})$. Subtracting $\E[X_t]^2$ recovers the exact variance.
+
+\paragraph{Nonlinear example.} On $x>0$ put $Y=\ln X$. Then $\dd Y=[a(X)/X-D(X)/X^2]\dd t+\sqrt{2D(X)}\,X^{-1}\dd W$. The extra drift $-D/X^2$ shows concretely why a nonlinear coordinate cannot be changed by the ordinary chain rule. This formula is valid up to a possible hit of zero unless the process remains positive.
+
+\section{From the Kramers equation to the Smoluchowski equation}
+\subsection{Forward equation in phase space}
+The underdamped Langevin SDE in the earlier section has forward density $f(x,v,t)$ satisfying the Kramers equation
+\begin{equation}\label{kramersphase}
+\partial_t f=-v\partial_x f+\frac{U'(x)}{m}\partial_v f+\frac{\zeta}{m}\partial_v(vf)+\frac{\zeta k_BT}{m^2}\partial_v^2 f.
+\end{equation}
+This follows directly from the two-dimensional forward equation, with diffusion only in velocity. Its equilibrium density is proportional to $\exp[-\beta(mv^2/2+U(x))]$; substituting it into \eqref{kramersphase} shows that the Hamiltonian terms cancel and the friction and velocity-diffusion terms cancel. The velocity current should not be interpreted separately from the reversible streaming terms when discussing detailed balance: time reversal also changes $v$ to $-v$.
+
+\subsection{Moment derivation and its assumptions}
+Assume $f$ and its velocity derivatives vanish sufficiently rapidly at $|v|\to\infty$. Define the position density, current and second moment
+\begin{equation}
+\rho(x,t)=\int f\dd v,\quad j(x,t)=\int v f\dd v,\quad M_2(x,t)=\int v^2 f\dd v.
+\end{equation}
+Integrating \eqref{kramersphase} against $1$ and $v$ yields the exact identities
+\begin{equation}\label{momenteq}
+\partial_t\rho=-\partial_xj,\qquad
+\partial_tj=-\partial_xM_2-\frac{U'}m\rho-\frac\zeta m j.
+\end{equation}
+The boundary terms in $v$ vanish by assumption. The hierarchy is not closed: $M_2$ evolves through higher moments. In a regime with fast velocity equilibration, away from an initial layer and any problematic spatial boundary layers, take the leading local-Maxwell approximation $M_2\simeq(k_BT/m)\rho$ and neglect $m\partial_tj$ relative to $\zeta j$. Equation \eqref{momenteq} then gives
+\begin{equation}
+j\simeq-\frac{1}{\zeta}\left(U'\rho+k_BT\partial_x\rho\right),\qquad
+\partial_t\rho\simeq\partial_x\left[\frac{U'}{\zeta}\rho+\frac{k_BT}{\zeta}\partial_x\rho\right].
+\end{equation}
+This is the Smoluchowski equation with $D=k_BT/\zeta$ for constant $\zeta$. The moment calculation is a leading-order asymptotic \emph{closure}, not a uniform error estimate or a proof that arbitrary coarse-grained MD has Markovian dynamics. Establishing a limit and its boundary conditions requires a specified scaling, regularity and boundary analysis; position-dependent mobility is subtler \cite{risken,gardiner}.
+
+\section{The same first-passage problem from both directions}
+\subsection{The killed heat kernel}
+Consider $F=0$, $D>0$, reflecting at $a$, absorbing at $b$, initial $x\in(a,b)$ and $L=b-a$. For the final-position variable $y$, solve
+\begin{equation}
+\partial_t p=D\partial_y^2p,\quad \partial_y p(a,t\mid x)=0,\quad p(b,t\mid x)=0,\quad p(y,0\mid x)=\delta(y-x).
+\end{equation}
+Separation of variables gives eigenfunctions $\phi_n(y)=\cos[k_n(y-a)]$ with $k_n=(n+\tfrac12)\pi/L$, $n=0,1,\ldots$. Their squared norm on $[a,b]$ is $L/2$. The eigenfunction expansion is
+\begin{equation}\label{heatkernelmixed}
+p(y,t\mid x)=\frac2L\sum_{n=0}^{\infty}\cos[k_n(y-a)]\cos[k_n(x-a)]e^{-Dk_n^2t}.
+\end{equation}
+It is an $L^2$ representation of the initial delta in the distributional sense and is smooth for $t>0$. For fixed $t>0$ the derivatives needed below converge; at $t=0$ the endpoint incompatibility of the delta is handled weakly.
+
+Integrating over $y$ gives the survival probability
+\begin{equation}\label{mixedsurvival}
+S(t\mid x)=\frac2L\sum_{n=0}^{\infty}\frac{(-1)^n}{k_n}\cos[k_n(x-a)]e^{-Dk_n^2t}.
+\end{equation}
+Its outward flux is $J(b,t)=-D\partial_y p(b,t\mid x)=-\partial_tS$. The density is positive even though individual terms of the spectral representation can alternate. The boundary condition and signs are checked by differentiating \eqref{heatkernelmixed}.
+
+\subsection{Integrate the survival curve and recover the backward result}
+For $t>0$ the series can be integrated on $[\epsilon,\infty)$; taking $\epsilon\downarrow0$ is justified, for example, by the absolutely convergent integrated $k_n^{-3}$ series. Thus
+\begin{equation}
+\int_0^\infty S(t\mid x)\dd t=\frac{2}{DL}\sum_{n=0}^\infty\frac{(-1)^n\cos[k_n(x-a)]}{k_n^3}.
+\end{equation}
+Call this sum $G(x)$. Its twice-differentiated series represents the constant $-1/D$ in the interior in the usual Fourier sense. It obeys $G'(a)=0$ and $G(b)=0$, so uniqueness of $DG''=-1$ with these two boundary conditions gives
+\begin{equation}
+G(x)=\frac{L^2-(x-a)^2}{2D}=\E_x\tau_b.
+\end{equation}
+Uniqueness follows because the difference of two solutions has zero second derivative, zero derivative at $a$ and zero value at $b$. This establishes that killed-density survival, outward flux and backward MFPT describe the same event. It does not make an arbitrary phenomenological kinetic rate equal to $1/T(x)$.
+
+\section{Estimating drift and diffusion from trajectories}
+\subsection{Conditional moments and the finite-lag problem}
+For an autonomous one-dimensional It\^o model, an ideal short-lag definition in the interior is
+\begin{equation}\label{kmest}
+a(x)=\lim_{\tau\downarrow0}\frac{\E[\Delta X\mid X_t=x]}\tau,\quad
+D(x)=\lim_{\tau\downarrow0}\frac{\operatorname{Var}(\Delta X\mid X_t=x)}{2\tau}.
+\end{equation}
+The raw second moment gives the same limit under regularity, because its conditional mean squared is $O(\tau^2)$, but can have appreciable finite-lag drift bias. In measured data, use a bin or conditional regression, estimate both moments at several lags, report occupancy and sensitivity to binning, and correct periodic wrapping when appropriate. A trajectory contains correlated and often overlapping increments; uncertainties should use independent replicates, suitably chosen block resampling or another method accounting for temporal correlation. Rarely populated regions give weakly constrained estimates. At a reflecting boundary local increment formulas are altered by the boundary local time; a naive interior estimator applied at the wall is not the same object.
+
+\paragraph{Exactly solvable finite-lag bias.} For $\dd X=-\lambda X\dd t+\sqrt{2D}\dd W$, $\E[X_{t+\tau}\mid X_t=x]=xe^{-\lambda\tau}$ and
+\begin{align}
+\frac{\E[\Delta X\mid x]}{\tau}&=x\frac{e^{-\lambda\tau}-1}{\tau},\\
+\frac{\operatorname{Var}(\Delta X\mid x)}{2\tau}&=D\frac{1-e^{-2\lambda\tau}}{2\lambda\tau}.
+\end{align}
+These converge to $-\lambda x$ and $D$ as $\tau\downarrow0$ but are biased at finite lag. The raw second moment includes the additional term $x^2(1-e^{-\lambda\tau})^2/(2\tau)$. This example explains why taking a long lag to reduce correlations does not automatically produce the local generator coefficient.
+
+\subsection{Atomistic trajectories, biased sampling and model validation}
+For smooth atomistic position trajectories with finite velocities, a projected coordinate is typically ballistic at sufficiently short lags: $\Delta s\simeq \dot s\tau$, so $\operatorname{Var}(\Delta s\mid s)/(2\tau)$ tends to zero under suitable finite-velocity assumptions. A diffusive coarse-grained window, if it exists, must lie beyond inertial and unresolved fast relaxations yet before strong inhomogeneity and state mixing. There may be no clean plateau.
+
+An alternative is to infer a parameterized $F(x)$ and $D(x)$ from observed finite-lag transition probabilities of a discretized generator using a likelihood or Bayesian analysis, together with an explicit initial-state and boundary model \cite{hummer2005}. It avoids equating a finite-lag raw moment to an infinitesimal coefficient, but still assumes the chosen Markov diffusion and is sensitive to binning, lag, statistics and model mismatch. For biased trajectories, the bias and its time dependence enter the dynamics: an equilibrium reweighting formula alone does not generally recover unbiased dynamical increments. Specialized inference methods have been developed for known biases under specified conditions \cite{comer,sicard}. Validate predictions on held-out lags, trajectories or first-passage data; agreement of an equilibrium profile is insufficient by itself.
+
+\section{A two-coordinate example: why projection creates memory}
+Consider an overdamped equilibrium diffusion $(X,Y)$ with isotropic mobility, inverse temperature $\beta$ and free energy
+\begin{equation}
+U(x,y)=\frac{k}{2}(x^2+y^2)+\frac{c}{2}(x-y)^2,\quad k>0,\quad c>0.
+\end{equation}
+Define orthonormal normal coordinates $u=(x+y)/\sqrt2$ and $v=(x-y)/\sqrt2$. Then $U=(ku^2+(k+2c)v^2)/2$. Both modes are independent stationary Ornstein--Uhlenbeck processes, with rates $r_1=D\beta k$ and $r_2=D\beta(k+2c)$, and variances $(\beta k)^{-1}$ and $[\beta(k+2c)]^{-1}$. Since $X=(u+v)/\sqrt2$, its normalized equilibrium correlation is
+\begin{equation}
+C_X(t)=w e^{-r_1t}+(1-w)e^{-r_2t},\quad
+w=\frac{k^{-1}}{k^{-1}+(k+2c)^{-1}}\in(0,1).
+\end{equation}
+The full $(X,Y)$ process is Markovian. But $X$ is a stationary Gaussian process whose two-time conditional kernel has mean $C_X(t)x$ and variance $\operatorname{Var}(X)[1-C_X(t)^2]$. If those projected kernels obeyed Chapman--Kolmogorov, conditional means would require $C_X(2t)=C_X(t)^2$. Instead,
+\begin{equation}
+C_X(2t)-C_X(t)^2=w(1-w)(e^{-r_1t}-e^{-r_2t})^2>0\quad(t>0).
+\end{equation}
+Thus the exact projected process is not Markovian for this coupled example, even though its marginal equilibrium distribution is a simple Gaussian and its free energy is harmonic. The result is an exact statement for this model and equilibrium ensemble. An effective one-dimensional Markov model may still approximate selected observables over a chosen scale; a matching marginal does not validate that approximation.
+
+\section{Reading the lesson's numerical code}
+\begin{itemize}
+\item[$\bullet$] \texttt{potential(x, barrier)} evaluates $H(x^2-1)^2$, while \texttt{force} evaluates its negative derivative. The potential is dimensionless in the worked example.
+\item[$\bullet$] \verb|mfpt_quadrature| evaluates \eqref{mfptformula}: it constructs the inner integral by cumulative trapezoidal quadrature and then integrates the outer factor. It accepts a scalar or callable positive $D(x)$. Grid resolution and overflow at high $\beta F$ are numerical concerns.
+\item[$\bullet$] \verb|grid_generator| constructs a dense row-generator with detailed-balance nearest-neighbour rates. The returned node weights are probability masses, not density values; a density estimate on a uniform grid is approximately mass divided by $h$.
+\item[$\bullet$] \verb|grid_mfpt| deletes the target from the transient system and solves $-Q_{SS}T=\mathbf1$. The last node is the default target, and the other endpoint is reflecting by omission of outward jumps.
+\item[$\bullet$] \verb|simulate_fpt| uses constant $D$ and the quartic potential, detects target crossings at the Euler endpoints and folds overshoots at the left wall. It returns observed times and a hit indicator. Its folded wall and endpoint crossing are approximations, particularly at finite $\Delta t$.
+\end{itemize}
+Match every parameter and the stopping event before comparing methods. The grid generator describes a finite-state approximation and cannot be equated exactly with the continuous Fokker--Planck operator at finite $h$. The trajectory routine takes a scalar $D$; the quadrature routine also accepts $D(x)$, so variable-$D$ comparisons require a compatible simulation and generator implementation. The use of the saved example and its numerical values assumes the repository version identified in the introduction.
+
+\clearpage
+\appendix
+\section{Partially absorbing boundary: a solvable extension}
+Suppose $a$ reflects and the right boundary has a finite reactivity $\kappa>0$, modeled by the forward radiation condition $J(b,t)=\kappa p(b,t)$. The units are $[\kappa]=[x]/[t]$. In the adjoint boundary identity, arbitrary boundary $p$ gives the backward condition
+\begin{equation}
+D(b)T'(b)+\kappa T(b)=0.
+\end{equation}
+The reflecting left condition remains $T'(a)=0$. Integrating the equilibrium diffusion equation for $T$ gives $T'(y)=-e^{\beta F(y)}D(y)^{-1}\int_a^y e^{-\beta F(z)}\dd z$. Hence
+\begin{equation}
+T(x)=\int_x^b\dd y\,\frac{e^{\beta F(y)}}{D(y)}\int_a^y e^{-\beta F(z)}\dd z
++\frac{e^{\beta F(b)}}{\kappa}\int_a^b e^{-\beta F(z)}\dd z.
+\end{equation}
+The second contribution is the extra mean time associated with finite boundary reactivity in this one-dimensional model. As $\kappa\to\infty$ the backward condition tends to $T(b)=0$ and the perfectly absorbing result is recovered. This model describes a radiation boundary, not a first hit of $b$: paths can interact with and survive encounters with the boundary.
+
+\section{Memory kernels and transition-path theory: scope}
+A generalized Langevin equation can contain a convolution over the past and a fluctuating force constrained by equilibrium fluctuation--dissipation in appropriate linear-bath models. The memory kernel need not reduce to a delta function, and a scalar free-energy profile does not uniquely determine it. For nonlinear projection, the memory and fluctuating force can be more complicated than a stationary linear kernel \cite{ayaz}. The coupled-OU example above gives a simple exact mechanism for non-Markovianity without requiring a full projection formalism.
+
+Transition-path theory studies reactive trajectories between specified sets $A,B$, together with committors and reactive probability currents \cite{evanden}. A first-passage trajectory includes waiting and recrossings before the first hit; a reactive transition path is a different segment of trajectory. A full derivation of transition-path fluxes, generalized Langevin projection identities and boundary local-time theory is beyond these notes and requires additional hypotheses. These appendices point to the relevant models rather than claiming complete measure-theoretic proofs of them.
+
+
+\section{Instructor questions and concise answers}
+\begin{enumerate}
+\item \textbf{Why does $\sqrt{\Delta t}$ appear?} Because Wiener increments have variance $\Delta t$; this yields displacement variance $2D\Delta t$. Using a noise amplitude proportional to $\Delta t$ makes accumulated variance vanish in the continuum limit.
+\item \textbf{Is the Markov assumption always valid after projection?} No. Degrees of freedom omitted from the chosen coordinate can retain memory. Compare model predictions with lag-dependent transition behavior, independent first-passage data and committors.
+\item \textbf{Does detailed balance follow from stationarity?} No. A stationary state can sustain currents. Detailed balance implies stationarity under appropriate assumptions, not conversely.
+\item \textbf{Is $p(b)=0$ the same as $J(b)=0$?} No. The first is a regular absorbing boundary for the killed density; the second is reflecting. A nonzero outward current is exactly how absorbed probability leaves.
+\item \textbf{Why is $T'(a)=0$?} It is the backward reflecting boundary condition; the adjoint identity \eqref{adjoint} shows its compatibility with zero forward flux.
+\item \textbf{Why can hitting a barrier take less time than reaching a product basin?} Every continuous path to the product beyond the barrier must first hit the barrier; some paths then recross. The two stopping events are different.
+\item \textbf{Does a finite histogram fix kinetic rates?} No. An equilibrium histogram gives a coordinate density. Rates also depend on dynamics, diffusion, initial preparation and event definition.
+\item \textbf{Do we always need a barrier for an MFPT?} No. Equation \eqref{flat} defines a meaningful first-hit experiment for flat $F$ on a finite interval. Choosing a target still requires a physical event definition.
+\item \textbf{What is the relation between a committor and MFPT?} They answer different backward boundary-value problems: $\Lop q=0$ for a splitting probability and $\Lop T=-1$ for a mean time. Both depend on the dynamics and state definitions.
+\item \textbf{Can one compare two reaction-coordinate FES barriers directly?} Not without accounting for the coordinate measure, transformed diffusivity, state definitions and omitted variables. The MFPT of a consistently transformed invertible model is invariant.
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{vankampen} N. G. van Kampen, \emph{Stochastic Processes in Physics and Chemistry}, 3rd ed., Elsevier, Amsterdam (2007). ISBN 978-0-444-52965-7. \url{https://www.sciencedirect.com/book/9780444529657/stochastic-processes-in-physics-and-chemistry}. General background on Markov processes, master equations, Fokker--Planck equations and first passage.
+\bibitem{gardiner} C. Gardiner, \emph{Stochastic Methods: A Handbook for the Natural and Social Sciences}, 4th ed., Springer (2009). \url{https://link.springer.com/book/9783540707127}.
+\bibitem{risken} H. Risken, \emph{The Fokker--Planck Equation: Methods of Solution and Applications}, 2nd ed., Springer (1996). \url{https://doi.org/10.1007/978-3-642-61544-3}.
+\bibitem{redner} S. Redner, \emph{A Guide to First-Passage Processes}, Cambridge University Press (2001). \url{https://doi.org/10.1017/CBO9780511606014}.
+\bibitem{hanggi} P. H\"anggi, P. Talkner and M. Borkovec, ``Reaction-rate theory: fifty years after Kramers,'' \emph{Rev. Mod. Phys.} \textbf{62}, 251--341 (1990). \url{https://doi.org/10.1103/RevModPhys.62.251}.
+\bibitem{hummer2005} G. Hummer, ``Position-dependent diffusion coefficients and free energies from Bayesian analysis of equilibrium and replica molecular dynamics simulations,'' \emph{New J. Phys.} \textbf{7}, 34 (2005). \url{https://doi.org/10.1088/1367-2630/7/1/034}.
+\bibitem{hummer2004} G. Hummer, ``From transition paths to transition states and rate coefficients,'' \emph{J. Chem. Phys.} \textbf{120}, 516--523 (2004). \url{https://doi.org/10.1063/1.1630572}.
+\bibitem{evanden} W. E and E. Vanden-Eijnden, ``Towards a theory of transition paths,'' \emph{J. Stat. Phys.} \textbf{123}, 503--523 (2006). \url{https://doi.org/10.1007/s10955-005-9003-9}.
+\bibitem{besthummer} R. B. Best and G. Hummer, ``Coordinate-dependent diffusion in protein folding,'' \emph{Proc. Natl. Acad. Sci. USA} \textbf{107}, 1088--1093 (2010). \url{https://doi.org/10.1073/pnas.0910390107}.
+
+\bibitem{comer} J. Comer, C. Chipot and F. D. Gonz\'alez-Nilo, ``Calculating position-dependent diffusivity in biased molecular dynamics simulations,'' \emph{J. Chem. Theory Comput.} \textbf{9}, 876--882 (2013). \url{https://doi.org/10.1021/ct300867e}.
+\bibitem{sicard} F. Sicard, V. Koskin, A. Annibale and E. Rosta, ``Position-dependent diffusion from biased simulations and Markov state model analysis,'' \emph{J. Chem. Theory Comput.} \textbf{17}, 2022--2033 (2021). \url{https://doi.org/10.1021/acs.jctc.0c01151}.
+\bibitem{ayaz} C. Ayaz, L. Scalfi, B. A. Dalton and R. R. Netz, ``Generalized Langevin equation with a nonlinear potential of mean force and nonlinear memory friction from a hybrid projection scheme,'' \emph{Phys. Rev. E} \textbf{105}, 054138 (2022). \url{https://doi.org/10.1103/PhysRevE.105.054138}.
+\end{thebibliography}
+\end{document}
