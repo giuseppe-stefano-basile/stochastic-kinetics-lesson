@@ -1,33 +1,18 @@
-\pdfoutput=1
 \documentclass[aspectratio=169,10pt]{beamer}
-\pdfmapfile{+cm.map}
-\pdfmapfile{+cmextra.map}
-\pdfmapfile{+symbols.map}
 \usepackage{amsmath,amssymb}
 \usepackage{tikz}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
-\definecolor{ink}{HTML}{142D42}
-\definecolor{teal}{HTML}{007C83}
-\definecolor{light}{HTML}{F0F6F6}
-\setbeamercolor{normal text}{fg=ink,bg=white}
-\setbeamercolor{frametitle}{fg=ink,bg=white}
-\setbeamercolor{structure}{fg=teal}
-\setbeamercolor{block title}{fg=white,bg=teal}
-\setbeamercolor{block body}{fg=ink,bg=light}
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{footline}{\leavevmode\hbox{\hspace{0.5cm}\scriptsize Stochastic kinetics\hfill\insertframenumber\hspace{0.5cm}}\vspace{0.2cm}}
-\setbeamertemplate{itemize items}[circle]
-\setbeamersize{text margin left=0.7cm,text margin right=0.7cm}
+\usetheme{SNS}
 \title{Stochastic kinetics}
 \subtitle{From Brownian trajectories to Fokker--Planck and first passage}
 \author{Giuseppe Stefano Basile}
-\institute{Hands-on lesson}
+\institute[Scuola Normale Superiore]{Scuola Normale Superiore}
 \date{}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\dd}{\mathrm{d}}
 \begin{document}
-\begin{frame}\titlepage\end{frame}
+\begin{frame}[plain,noframenumbering]\titlepage\end{frame}
 \begin{frame}{The question behind this lesson}
 \begin{block}{A molecular transition}Given a free-energy landscape and a diffusion coefficient, how long does it take to reach a product state?\end{block}
 \begin{itemize}\item Start with individual noisy trajectories.\item Derive an equation for their probability density.\item Predict a mean first-passage time and test it numerically.\end{itemize}
@@ -47,22 +32,47 @@ For $N$ independent samples, estimate the mean and its standard error by
 \begin{itemize}\item Standard deviation describes variation between outcomes.\item Standard error describes uncertainty in the estimated mean.\item Consecutive trajectory frames are generally correlated.\end{itemize}
 \begin{block}{Try it}Compare histograms for $N=100$ and $N=10\,000$ in the foundations notebook.\end{block}
 \end{frame}
-\begin{frame}{Process, path and Markov property}
-\begin{itemize}\item A process $\{X_t\}_{t\geq0}$ is a family of random variables.\item A trajectory is one realization. A density describes an ensemble.\item Markov property: given the present state, the future is independent of its past.\end{itemize}
-\vspace{0.3cm}For a molecular coordinate, omitted degrees of freedom can carry memory. Markovianity must be assessed for the chosen state.
+\begin{frame}{A process, a path and a transition density}
+Fix one time $t$: $X_t$ is a random variable. Follow one realization across times: that is a path.
+\[
+\begin{aligned}
+P_1(x,t) &= p(x,t) &&\text{density at one time},\\
+P_{1|1}(y,t_2\mid x,t_1) &&&\text{density at }t_2\text{ given }X_{t_1}=x.
+\end{aligned}
+\]
+To get a probability for an interval at $t_2$, integrate the transition density over the arrival coordinate $y$.
+\medskip
+
+\footnotesize Notation follows N. G. van Kampen, \emph{Stochastic Processes in Physics and Chemistry}, 3rd ed., Chs. III--IV.
 \end{frame}
 
-\begin{frame}{Transition densities and the Markov assumption}
-For a time-homogeneous Markov process with transition density
-$p_t(y\mid x)$, conditioning on the intermediate state gives
+\begin{frame}{What does the Markov assumption say?}
+For $t_1<t_2<t_3$, the present state $x_2$ is sufficient to predict the distribution at the next time:
+\[
+ P_{1|2}(x_3,t_3\mid x_1,t_1; x_2,t_2)
+ =
+ P_{1|1}(x_3,t_3\mid x_2,t_2).
+\]
+The same reduction applies to any finite history. The left side conditions on two earlier observations. The right side keeps only the latest one.
+\begin{block}{A molecular test}
+Two configurations can share a coordination number yet differ in their solvent geometry. Could those differences change what happens next?
+\end{block}
+\end{frame}
+
+\begin{frame}{Chapman--Kolmogorov: sum over the intermediate state}
+For $t_1<t_2<t_3$, the Markov property and the law of total probability give
+\[
+\begin{aligned}
+&P_{1|1}(x_3,t_3\mid x_1,t_1)\\[-.2ex]
+&=\int P_{1|1}(x_3,t_3\mid x_2,t_2)
+             P_{1|1}(x_2,t_2\mid x_1,t_1)\,\dd x_2.
+\end{aligned}
+\]
+If the dynamics are time homogeneous, the transition density depends on the lag:
 \[
 p_{t+s}(y\mid x)=\int p_t(y\mid z)\,p_s(z\mid x)\,\dd z.
 \]
-\begin{itemize}
-\item The integral sums all intermediate positions $z$.
-\item This Chapman--Kolmogorov relation is a model check at chosen lag times.
-\item An equilibrium density alone does not specify $p_t(y\mid x)$.
-\end{itemize}
+In data, compare the directly estimated transition over $t+s$ with the composed estimate. Agreement at chosen lags supports the model at those lags.
 \end{frame}
 \begin{frame}{Our investigation and route through the lesson}
 \begin{block}{One experiment}
@@ -382,6 +392,42 @@ Before predicting kinetics, ask:
 \begin{enumerate}\item Do $A$ and $B$ represent the desired molecular event?\item Is the projected dynamics approximately Markovian?\item Is $D(s)$ known, with units and uncertainty?\item Are predictions robust to boundaries and hidden slow coordinates?\end{enumerate}
 \end{frame}
 
+\newcommand{\sagresticredit}[1]{%
+  \par\smallskip{\scriptsize Sagresti et al., \emph{J. Chem. Theory Comput.}
+  \textbf{18}, 3164--3173 (2022), Fig.~#1.
+  \href{https://doi.org/10.1021/acs.jctc.2c00181}{DOI} \quad
+  \href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0}.}}
+\begin{frame}{Water exchange around an ion}
+\begin{columns}[c,onlytextwidth]
+\column{.57\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=.61\textheight,keepaspectratio]{figures/sagresti2022-fig1.png}
+\column{.39\textwidth}
+For $\mathrm{Ca}^{2+}$, the continuous solvent coordination number $s$ tracks water occupancy near the ion.
+\medskip
+
+\textbf{Discuss.} Which regions could define reactant and product? What else would you need to predict an exchange time?
+\end{columns}
+\sagresticredit{1}
+\end{frame}
+
+\begin{frame}{A committor test for the coordination number}
+\begin{columns}[c,onlytextwidth]
+\column{.42\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=.66\textheight,keepaspectratio]{figures/sagresti2022-fig6.png}
+\column{.54\textwidth}
+For $\mathrm{Hg}^{2+}$, the authors launched MD replicas from configurations selected near each of two barrier tops.
+\medskip
+
+Each histogram shows the spread of estimated committors across starting configurations at one barrier.
+\medskip
+
+\textbf{Discuss.} Why would a narrow distribution near $q=1/2$ support $s$ as a dividing coordinate?
+\end{columns}
+\sagresticredit{6}
+\end{frame}
+
 \begin{frame}{A molecular projection can hide slow variables}
 \begin{center}
 \begin{tikzpicture}[>=stealth]
@@ -411,6 +457,8 @@ Read \texttt{notes/00\_foundations.md} and \texttt{notes/derivations.md} for ful
 \begin{frame}{References and teaching material}
 \footnotesize
 \begin{itemize}
+\item N. G. van Kampen, \emph{Stochastic Processes in Physics and Chemistry}, 3rd ed., North-Holland (2007), Chs. III--IV.
+\item L. Sagresti, L. Peri, G. Ceccarelli, G. Brancato, \emph{J. Chem. Theory Comput.} \textbf{18}, 3164--3173 (2022), \href{https://doi.org/10.1021/acs.jctc.2c00181}{doi:10.1021/acs.jctc.2c00181}.
 \item C. W. Gardiner, \emph{Handbook of Stochastic Methods}, 3rd ed., Springer (2004).
 \item P. H\"anggi, P. Talkner, M. Borkovec, Rev. Mod. Phys. \textbf{62}, 251 (1990), \href{https://doi.org/10.1103/RevModPhys.62.251}{doi:10.1103/RevModPhys.62.251}.
 \item G. Hummer, New J. Phys. \textbf{7}, 34 (2005), \href{https://doi.org/10.1088/1367-2630/7/1/034}{doi:10.1088/1367-2630/7/1/034}.

@@ -1,0 +1,48 @@
+\ProvidesPackage{beamerthemeSNS}
+% Palette and font choices from the SNS visual-identity guide.
+\RequirePackage{fontspec}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{Liberation Sans}}
+\newcommand{\snsheadingfont}{\sffamily}
+\IfFontExistsTF{Roboto Condensed}{%
+  \IfFontExistsTF{Rotis Semi Serif}{%
+    \setsansfont{Roboto Condensed}
+    \newfontfamily\snsrotis{Rotis Semi Serif}
+    \renewcommand{\snsheadingfont}{\snsrotis}
+  }{}%
+}{}
+\definecolor{ink}{HTML}{183F56}
+\definecolor{teal}{HTML}{00728D}
+\definecolor{snsgray}{HTML}{4D4E4F}
+\definecolor{snspale}{HTML}{9CD7F3}
+\definecolor{orange}{HTML}{E69426}
+\colorlet{light}{snspale!22!white}
+\setbeamercolor{normal text}{fg=snsgray,bg=white}
+\setbeamercolor{frametitle}{fg=ink,bg=white}
+\setbeamercolor{title}{fg=ink}
+\setbeamercolor{subtitle}{fg=teal}
+\setbeamercolor{structure}{fg=teal}
+\setbeamercolor{block title}{fg=white,bg=teal}
+\setbeamercolor{block body}{fg=ink,bg=light}
+\setbeamerfont{title}{family=\snsheadingfont,size=\LARGE,series=\bfseries}
+\setbeamerfont{frametitle}{family=\snsheadingfont,size=\large,series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=0.85cm,text margin right=0.85cm}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{frametitle}{%
+  \vspace{.38cm}\strut\insertframetitle\par
+  \vspace{.10cm}{\color{teal}\rule{\textwidth}{.55pt}}\par\vspace{.07cm}}
+\setbeamertemplate{footline}{%
+  \hbox to \paperwidth{\hspace{.85cm}\color{teal}\scriptsize
+    \insertshortinstitute\hfill\insertframenumber\hspace{.85cm}}\vskip.20cm}
+\setbeamertemplate{title page}{%
+  \vspace*{.35cm}
+  \IfFileExists{sns-logo-approved.pdf}{%
+    \includegraphics[height=15mm]{sns-logo-approved.pdf}\par\vspace{.45cm}%
+  }{%
+    {\small\color{teal}\insertinstitute\par}\vspace{.75cm}%
+  }%
+  {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+  \vspace{.16cm}{\color{teal}\rule{.19\textwidth}{1.1pt}}\par
+  \vspace{.20cm}{\usebeamercolor[fg]{subtitle}\large\insertsubtitle\par}
+  \vspace{.65cm}{\normalsize\insertauthor\par}
+}
