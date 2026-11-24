@@ -31,9 +31,10 @@
 \setbeamertemplate{frametitle}{%
   \vspace{.38cm}\strut\insertframetitle\par
   \vspace{.10cm}{\color{teal}\rule{\textwidth}{.55pt}}\par\vspace{.07cm}}
+\newcommand{\snsfooterprefix}{}
 \setbeamertemplate{footline}{%
   \hbox to \paperwidth{\hspace{.85cm}\color{teal}\scriptsize
-    \insertshortinstitute\hfill\insertframenumber\hspace{.85cm}}\vskip.20cm}
+    \insertshortinstitute\hfill\snsfooterprefix\insertframenumber\hspace{.85cm}}\vskip.20cm}
 \setbeamertemplate{title page}{%
   \vspace*{.35cm}
   \IfFileExists{sns-logo-approved.pdf}{%

@@ -51,15 +51,17 @@ Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/Ha
 
 ## Beamer slides
 
-The editable presentation is `slides/stochastic_kinetics.tex`. Compile it with a standard TeX Live installation containing Beamer, TikZ and PGFPlots:
+Open the [compiled Beamer slides](slides/stochastic_kinetics.pdf) or edit [the LaTeX source](slides/stochastic_kinetics.tex). The main deck opens with molecular examples and gives explicit notebook handoffs. Additional derivations and extensions follow the **Backup slides** divider.
+
+Build with XeLaTeX and a TeX distribution containing Beamer, TikZ, PGFPlots and fontspec:
 
 ```bash
 cd slides
-pdflatex stochastic_kinetics.tex
-pdflatex stochastic_kinetics.tex
+xelatex -halt-on-error stochastic_kinetics.tex
+xelatex -halt-on-error stochastic_kinetics.tex
 ```
 
-The slides include the introductory material and the main hands-on lesson.
+See [SNS build and figure credits](slides/SNS_BUILD.md) for fonts and attribution.
 
 ### Guided kinetics investigation
 
