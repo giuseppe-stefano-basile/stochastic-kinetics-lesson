@@ -11,42 +11,32 @@ A hands-on, mathematically grounded introduction for advanced undergraduates and
 
 ## Quick start
 
-Python 3.10+ recommended. In a terminal:
+Use Python 3.10 or newer. From the repository root on Linux or macOS:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e '.[teaching]'
 jupyter lab
 ```
 
-Start with `notes/00_foundations.md` and `notebooks/00_foundations.ipynb`, then open `notebooks/01_student.ipynb`. Alternatively upload the entire repository to a notebook environment and install with `pip install -e .`; no network or external dataset is needed after installation. The student notebook contains tasks and runnable starter cells; `02_instructor.ipynb` gives worked code and results. Read `notes/derivations.md` alongside them. Execute cells in order. Plotting requires a notebook kernel. Run `python -m pytest` for automated checks.
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` after creating the environment with `py -m venv .venv`. In Jupyter, open the notebooks under `notebooks/` and use the Python kernel from this environment. Once installed, the examples run locally without external datasets. Run `python -m pytest` from the repository root to check the numerical code.
 
+## Lesson path
 
+| Material | What to do |
+| --- | --- |
+| [Foundations notes](notes/00_foundations.ipynb) and [foundations lab](notebooks/00_foundations.ipynb) | Build intuition for distributions, Brownian paths and ensemble variance. |
+| [Student notebook](notebooks/01_student.ipynb) | Model a double well, estimate survival and compare first-passage methods. |
+| [Kinetics investigation](notebooks/03_kinetics_investigation.ipynb) | Match the model and boundaries across methods, then change the diffusion, barrier or target. |
 
-Students new to probability should complete the foundations chapter and notebook before class, if possible.
+The [derivations](notes/derivations.ipynb), [instructor guide](notes/instructor.ipynb), and [references](notes/references.ipynb) are Jupyter notebooks with sectioned Markdown cells and rendered equations. The [worked notebook](notebooks/02_instructor.ipynb) contains executable solutions. The [printable instructor notes](notes/Stochastic_Kinetics_Instructor_Notes.pdf) are also available as [LaTeX source](notes/Stochastic_Kinetics_Instructor_Notes.tex).
 
-The root-level `01_student.ipynb` is an earlier independent copy, retained for reference. Use the maintained version in `notebooks/`.
-
-## Contents
-
-- `notes/00_foundations.md`: a beginner introduction to probability, Brownian motion and the Fokker–Planck equation.
-- `notebooks/00_foundations.ipynb`: worked numerical introduction and guided exercises.
-- `notebooks/01_student.ipynb`: maintained student lesson with predictions and exercises.
-- `notebooks/03_kinetics_investigation.ipynb`: guided double-well investigation.
-- `notebooks/02_instructor.ipynb`: executable solutions and diagnostics.
-- `notes/derivations.md`: detailed mathematical development and assumptions.
-- `notes/Stochastic_Kinetics_Instructor_Notes.pdf`: extended printable derivations and instructor reference ([LaTeX source](notes/Stochastic_Kinetics_Instructor_Notes.tex)).
-- `notes/instructor.md`: expected answers, teaching choices and pitfalls.
-- `notes/references.md`: references and repository attribution.
-- `src/stochkin/`: short transparent numerical implementations.
-- `tests/`: analytic and numerical validation.
-
-The model uses dimensionless units: beta=1, length scale=1, D=1 by default. A simulation step observes the process only at discrete times; reflection by folding and absorption by endpoint crossing approximate continuous boundaries. Check convergence in the step size. The grid generator is a continuous-time Markov-chain approximation and its boundary is a grid node, not an exact continuum boundary at finite spacing.
+The model uses dimensionless units with default `beta=1` and `D=1`. The trajectory code reflects overshoots and checks absorption at sampled endpoints. The grid generator approximates the continuum with a finite-state jump process. Compare step sizes and grids, and account separately for sampling uncertainty and any censored observations.
 
 ## Attribution and license
 
-Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/HandsOnSession_CMLS), particularly its Langevin, MSM and Fokker–Planck tutorial. This project implements its own model and code and does not redistribute files from that repository. Consult the original repository's license before reusing its material. Original material here is offered under the MIT license in `LICENSE`.
+Inspired by Luca Sagresti's [HandsOnSession_CMLS](https://github.com/lianctrl/HandsOnSession_CMLS), particularly its Langevin, MSM and Fokker–Planck tutorial. This project implements its own model and code and does not redistribute files from that repository. Consult the original repository's license before reusing its material. Original material here uses the [MIT license](LICENSE). See the [figure credits](slides/SNS_BUILD.md#figure-credits) for reproduced figures and their license.
 
 
 ## Beamer slides
@@ -63,7 +53,4 @@ xelatex -halt-on-error stochastic_kinetics.tex
 
 See [SNS build and figure credits](slides/SNS_BUILD.md) for fonts and attribution.
 
-### Guided kinetics investigation
-
-Open `notebooks/03_kinetics_investigation.ipynb` for a single double-well experiment connecting the backward equation, simulated first passages, grid refinement, censoring and parameter changes. For the Beamer density comparison, `python slides/generate_density_data.py` regenerates the CSV data in the current directory (NumPy and SciPy required). The slide source embeds the displayed coordinates and builds without Python. The slide deck includes core material and optional extensions.
-
+For the Beamer density comparison, `python slides/generate_density_data.py` regenerates the CSV data in the working directory. The slide source embeds the displayed coordinates, so XeLaTeX can build the deck without running Python.

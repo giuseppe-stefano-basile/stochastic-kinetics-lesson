@@ -49,3 +49,13 @@ def test_fpt_simulation_agrees_with_quadrature_with_sampling_margin():
     exact = mfpt_quadrature(-1., -2., 1.)
     se = t.std(ddof=1)/np.sqrt(len(t))
     assert abs(t.mean()-exact) < 4*se + 0.20
+
+
+def test_integer_horizon_preserves_fractional_hit_times():
+    # The observation horizon should not determine the dtype of recorded times.
+    params = dict(n_traj=50, dt=0.01, x0=0.9, seed=7)
+    times, hits = simulate_fpt(max_time=1, **params)
+    expected_times, expected_hits = simulate_fpt(max_time=1.0, **params)
+    assert np.array_equal(hits, expected_hits)
+    assert np.any((times[hits] > 0) & (times[hits] < 1))
+    assert np.array_equal(times, expected_times)

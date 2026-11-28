@@ -89,7 +89,7 @@ def simulate_fpt(n_traj=2000, dt=0.002, max_time=150.0, x0=-1.0,
         raise ValueError("max_time must be an integer multiple of dt")
     rng = np.random.default_rng(seed)
     x = np.full(n_traj, x0, dtype=float)
-    times = np.full(n_traj, max_time)
+    times = np.full(n_traj, max_time, dtype=float)
     hit = np.zeros(n_traj, dtype=bool)
     for step in range(1, nsteps+1):
         ids = np.flatnonzero(~hit)

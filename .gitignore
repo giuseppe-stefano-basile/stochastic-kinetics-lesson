@@ -4,3 +4,15 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 *.pyc
+
+# LaTeX intermediate files
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.fmt
